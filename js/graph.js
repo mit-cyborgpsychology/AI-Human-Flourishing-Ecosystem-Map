@@ -17,6 +17,13 @@ const S0 = logistic(0), S1 = logistic(1);
 /* normalized 0..1 sigmoid over the weight range */
 export const sigmoid01 = t => (logistic(t) - S0) / (S1 - S0);
 
+/* Mean prominence of an edge's two ends. Both endpoint values are already sigmoid
+   (see sigmoid01), so connection width ramps smoothly from sparse to dense pairings. */
+export function edgeAvgProminence(e) {
+  const ps = [e.s, e.t].map(n => n.prom).filter(p => p !== undefined);
+  return ps.length ? ps.reduce((x, y) => x + y, 0) / ps.length : 1;
+}
+
 /* How strongly an edge reads, given how connected the organizations at its ends are.
    Peripheral organizations' links recede so the dense core of the ecosystem stands out. */
 export function edgeProminence(e) {
@@ -176,6 +183,15 @@ export function visible(n) {
 const REPEL = 260;
 const repelR = n => n.kind === 'role' ? n.r * 5 : n.kind === 'root' ? n.r * 4 : n.r;
 
+/* Base repulsion scales with the sum of two radii, so a big node barely pushes a big
+   neighbour harder than it pushes a small one. This extra term is the product of the
+   two organizations' prominence, so the major hubs spread apart from each other
+   instead of clumping — and it stays ~1 whenever either end is small. */
+const BIG_REPEL = 3;
+const bigBoost = (a, b) => (a.kind === 'org' && b.kind === 'org')
+  ? 1 + BIG_REPEL * (a.prom ?? 0) * (b.prom ?? 0)
+  : 1;
+
 export function step() {
   const nodes = S.nodes, edges = S.edges;
   const N = nodes.length;
@@ -183,8 +199,10 @@ export function step() {
     for (let j = i + 1; j < N; j++) { const b = nodes[j];
       let dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy;
       if (d2 < 1) { dx = rand(-1, 1); dy = rand(-1, 1); d2 = 1; }
-      if (d2 > 300000) continue;
-      const d = Math.sqrt(d2), rep = REPEL * (repelR(a) + repelR(b)) / d2, fx = dx / d * rep, fy = dy / d * rep;
+      const boost = bigBoost(a, b);
+      // hub pairs also act on each other over a longer range, so they separate globally
+      if (d2 > (boost > 1.2 ? 900000 : 300000)) continue;
+      const d = Math.sqrt(d2), rep = REPEL * (repelR(a) + repelR(b)) / d2 * boost, fx = dx / d * rep, fy = dy / d * rep;
       a.vx -= fx; a.vy -= fy; b.vx += fx; b.vy += fy;
     } }
   for (const e of edges) {

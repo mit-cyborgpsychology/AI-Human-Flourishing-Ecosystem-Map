@@ -2,10 +2,13 @@
 
 import { ROLES, AREAS, AREA_KEYS, RING_R, RING_W, SANS } from './config.js';
 import { S, theme } from './state.js';
-import { step, colorOf, nodeAreas, arcBounds, arcHit, visible, edgeProminence } from './graph.js';
+import { step, colorOf, nodeAreas, arcBounds, arcHit, visible, edgeProminence, edgeAvgProminence } from './graph.js';
 
-/* Every cross-org connection draws identically: one weight, fully opaque. */
-const LINK_ALPHA = 1, LINK_WIDTH = 1.35;
+/* Connections and project spokes are fully opaque. Connection width ramps along the
+   sigmoid prominence of the two organizations it joins; project spokes are uniform. */
+const LINK_ALPHA = 1, LINK_W_MIN = 0.4, LINK_W_MAX = 0.9;
+const PROJ_ALPHA = 1, PROJ_WIDTH = 0.4;
+const ROLE_ALPHA = 1, ROLE_WIDTH = 0.6;
 import { select, selectArea } from './panel.js';
 
 const cv = document.getElementById('net'), ctx = cv.getContext('2d');
@@ -90,8 +93,9 @@ export function draw() {
       for (const k of list) {
         const i = AREA_KEYS.indexOf(k); if (i < 0) continue;
         const [s, e] = arcBounds(i), col = AREAS[k].color;
-        let th = Math.atan2(n.y, n.x); while (th < s) th += Math.PI * 2;
-        const t = Math.min(Math.max(th, s + .05), e - .05);
+        // every thread for an area meets the ring at the centre of that segment,
+        // so each flourishing area reads as one anchor point rather than a smear
+        const t = (s + e) / 2;
         const ax = Math.cos(t) * (RING_R - RING_W / 2 - 2), ay = Math.sin(t) * (RING_R - RING_W / 2 - 2);
         const np = n.prom ?? 1;
         let a = (isOrgN ? .16 : .09) * (.3 + .7 * np), w = isOrgN ? .9 : .6;
@@ -114,9 +118,14 @@ export function draw() {
     else if (e.kind === 'role') { a = .55; w = 1.15; col = colorOf(e.s); bend = .06; }
     else if (e.kind === 'spine') { a = .5; w = 1.3; col = colorOf(e.t); bend = .04; }
     else { a = .7; w = 1.5; col = PAL.link; bend = .13; grad = [colorOf(e.s), colorOf(e.t)]; }
-    // cross-org connections all read the same; only the structural edges (project
-    // spokes, role spokes) recede with how sparsely connected their ends are
-    if (e.kind === 'link') { a = LINK_ALPHA; w = LINK_WIDTH; }
+    // connections and project spokes all read the same; only the role spokes
+    // recede with how sparsely connected their ends are
+    if (e.kind === 'link') {
+      a = LINK_ALPHA;
+      w = LINK_W_MIN + (LINK_W_MAX - LINK_W_MIN) * edgeAvgProminence(e);
+    }
+    else if (e.kind === 'proj') { a = PROJ_ALPHA; w = PROJ_WIDTH; }
+    else if (e.kind === 'role') { a = ROLE_ALPHA; w = ROLE_WIDTH; }
     else {
       const ep = edgeProminence(e);
       a *= .25 + .75 * ep;
