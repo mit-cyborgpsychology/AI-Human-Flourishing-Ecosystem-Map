@@ -143,6 +143,17 @@ header{position:fixed;top:0;left:0;right:0;padding:20px 24px;display:flex;
   border:0;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:var(--sans)}
 .crumb:hover{color:var(--accent)}
 
+/* password gate — everything but the gate card is blurred and inert while locked */
+body.locked > :not(#gate){filter:blur(16px);pointer-events:none;user-select:none}
+#gate{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:color-mix(in srgb,var(--bg) 62%,transparent)}
+#gateCard{width:min(400px,100%);background:var(--surface);border:1px solid var(--hair);
+  border-radius:14px;padding:24px;box-shadow:var(--shadow);text-align:left}
+#gateCard.shake{animation:shake .4s}
+#gateCard h2{font-size:16.5px;font-weight:650;letter-spacing:-.01em;margin:8px 0 4px}
+#gateCard .sub{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:16px}
+#gateCard .btn.primary{width:100%;justify-content:center;margin-top:4px}
+
 #scrim{position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 32%,transparent);
   z-index:80;display:none;align-items:center;justify-content:center;padding:20px}
 #scrim.open{display:flex}

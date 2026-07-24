@@ -6,7 +6,21 @@
 <title>AI for Human Flourishing Ecosystem Map</title>
 <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
+<body class="locked">
+
+<div id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+  <form id="gateCard" autocomplete="off">
+    <span class="eyebrow">Private preview</span>
+    <h2 id="gateTitle">This map is password protected</h2>
+    <p class="sub">Enter the password to view the AI for Human Flourishing ecosystem map.</p>
+    <div class="field">
+      <label for="gatePw">Password</label>
+      <input id="gatePw" type="password" autocomplete="off" autofocus>
+    </div>
+    <div class="ferr" id="gateErr">Incorrect password — hint: what this whole map is about.</div>
+    <button class="btn primary" id="gateGo" type="submit">Unlock</button>
+  </form>
+</div>
 
 <canvas id="net" aria-label="Network map of organizations working on AI and human flourishing"></canvas>
 
@@ -63,6 +77,7 @@
 <div id="toast" role="status"></div>
 <div id="hint">Drag to explore · scroll to zoom · click any node</div>
 
+<script src="js/gate.js"></script>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>
