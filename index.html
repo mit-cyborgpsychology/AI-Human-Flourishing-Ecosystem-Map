@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI × Human Flourishing — Ecosystem Atlas</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<canvas id="net" aria-label="Network map of organizations working on AI and human flourishing"></canvas>
+
+<header>
+  <div class="titleblock">
+    <span class="eyebrow">Ecosystem Atlas</span>
+    <h1>AI × Human Flourishing</h1>
+    <div class="stats" id="stats"></div>
+  </div>
+  <div class="controls">
+    <div class="search">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" type="search" placeholder="Search the network" autocomplete="off">
+    </div>
+    <button class="btn" id="pathwayBtn" title="View the pathway from funding to impact">Pathway to impact</button>
+    <button class="btn" id="dataBtn" title="Browse and edit the underlying CSV tables">Data (CSV)</button>
+    <button class="btn" id="ringBtn" title="Show or hide the flourishing-areas ring">Hide ring</button>
+    <button class="btn" id="projBtn" title="Show or hide project nodes">Hide projects</button>
+    <button class="btn" id="exportBtn" title="Download the dataset as CSV files">Export CSV</button>
+    <button class="btn" id="editBtn"><span id="editLbl">Edit</span></button>
+  </div>
+</header>
+
+<div id="legend" role="group" aria-label="Filter by ecosystem role"></div>
+
+<div id="editDock">
+  <button class="btn primary" id="addOrgBtn">＋ Add organization</button>
+  <button class="btn" id="resetBtn">Reset to seed data</button>
+</div>
+
+<aside id="panel" aria-live="polite">
+  <button class="pclose" id="pclose" aria-label="Close panel">✕</button>
+  <div id="panelScroll"></div>
+</aside>
+
+<div id="overlay" role="dialog" aria-modal="true">
+  <div id="overlayHead">
+    <div><span class="eyebrow" id="ovEyebrow">View</span><h2 id="ovTitle"></h2></div>
+    <div id="overlayTools"></div>
+    <button class="btn" id="ovClose">✕ Close</button>
+  </div>
+  <div id="overlayBody"></div>
+</div>
+
+<div id="scrim"><div id="modal" role="dialog" aria-modal="true"></div></div>
+<div id="toast" role="status"></div>
+<div id="hint">Drag to explore · scroll to zoom · click any node</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+source_id,target_id,label
+aha,openai,Joint RCT on chatbot wellbeing
+aha,cht,AHA Symposium dialogue
+aha,thrive,AHA Symposium dialogue
+aha,harvard-hfp,Flourishing science exchange
+aha,bkc,Ethics & Governance of AI Initiative
+harvard-hfp,baylor-isr,Global Flourishing Study co-leads
+harvard-hfp,gallup,GFS data collection
+harvard-hfp,cos,GFS open data
+harvard-hfp,templeton,GFS funding
+baylor-isr,templeton,GFS funding
+gloo,harvard-hfp,Benchmark uses flourishing dimensions
+oxford-wrc,gallup,World Happiness Report data
+oxford-wrc,wwm,Incubated the movement
+thrive,openai,Thrive AI Health venture
+stanford-hai,oecd,Shared AI metrics
+pai,openai,Partner network
+pai,deepmind,Partner network
+pai,msr,Partner network
+msr,openai,Strategic partnership
+ath,cht,Responsible tech community
+commonsense,anthropic,Youth AI Safety Institute support
+commonsense,openai,Youth AI Safety Institute support
+commonsense,hopelab,Joint youth wellbeing research
+mozilla,humanity-ai,Humanity AI coalition member
+ford,humanity-ai,Humanity AI coalition member
+macarthur,humanity-ai,Humanity AI coalition member
+omidyar,humanity-ai,Humanity AI coalition member
+wellcome,gates,Joint AI health evaluations
+commonsense,humane-intel,Youth AI safety evaluation partner
+noesis,harvard-hfp,Social AI white paper
+current-ai,ford,Founding partner
+current-ai,macarthur,Founding partner
+current-ai,deepmind,Founding partner
+aha,psychtech,Open Benchmark for the Human Impact of AI
+aha,anthropic,Research collaboration
+aha,commonsense,Youth & AI collaboration
+aha,omidyar,Program support
+aha,human-change,Program support
+aha,mit-raise,MIT Media Lab initiatives
+turing,ada,UK AI research ecosystem
+ai-now,data-society,NYC critical AI research
+mozilla,cht,Humane & trustworthy tech
+stanford-hai,gallup,AI Index survey data
+noesis,psychtech,Flourishing research network
+current-ai,mozilla,Public-interest AI
+unesco,oecd,Global AI governance
+wef,pai,Multistakeholder governance
