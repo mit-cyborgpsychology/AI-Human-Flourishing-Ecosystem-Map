@@ -9,7 +9,16 @@
   var pw = document.getElementById('gatePw');
   var err = document.getElementById('gateErr');
 
+  // the blurred page is decorative while locked — keep it out of tab order too
+  function setInert(on) {
+    var kids = document.body.children;
+    for (var i = 0; i < kids.length; i++) {
+      if (kids[i] !== gate) kids[i].inert = on;
+    }
+  }
+
   function unlock() {
+    setInert(false);
     document.body.classList.remove('locked');
     gate.remove();
     // let the canvas pick up its real size now that nothing is blurred
@@ -18,6 +27,8 @@
 
   // stay unlocked for the rest of the browser session
   try { if (sessionStorage.getItem(KEY) === '1') { unlock(); return; } } catch (e) {}
+
+  setInert(true);
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
