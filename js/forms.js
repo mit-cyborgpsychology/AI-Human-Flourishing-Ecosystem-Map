@@ -1,10 +1,13 @@
-/* Modal forms (org / project / connection), edit-mode gate. */
+/* Modal forms (org / project / connection), edit-mode gate.
+   Saves write straight into the CSV store rows — the forms are just a
+   friendlier surface over the same CSV tables the Data editor shows. */
 
-import { ROLES, AREAS } from './config.js';
+import { ROLES, AREAS, LINK_TYPES } from './config.js';
 import { S } from './state.js';
-import { orgRoles, primaryRole, slug } from './model.js';
+import { store } from './store.js';
+import { joinList } from './csv.js';
+import { orgRoles, primaryRole, slug, ensurePeople } from './model.js';
 import { esc, toast, openModal, closeModal, modal } from './dom.js';
-import { afterMutate } from './mutate.js';
 import { select, renderPanel } from './panel.js';
 import { refreshOverlay } from './overlay.js';
 
@@ -41,18 +44,19 @@ export function orgForm(existing) {
     if (!name) { modal.querySelector('#fErr').style.display = 'block'; return; }
     const primary = modal.querySelector('#fRole').value;
     const extra = [...modal.querySelectorAll('[data-role]:checked')].map(c => c.dataset.role).filter(k => k !== primary);
-    const v = { name, role: primary, roles: [primary, ...extra],
+    const vals = { name, roles: joinList([primary, ...extra]),
       location: modal.querySelector('#fLoc').value.trim(),
       url: modal.querySelector('#fUrl').value.trim(),
-      desc: modal.querySelector('#fDesc').value.trim(),
-      people: splitCommas(modal.querySelector('#fPeople').value),
-      tags: splitCommas(modal.querySelector('#fTags').value),
-      keywords: splitCommas(modal.querySelector('#fKw').value),
-      areas: readAreas() };
-    if (existing) Object.assign(existing, v);
-    else S.data.orgs.push({ id: slug(name), projects: [], extra: {}, ...v });
-    closeModal(); afterMutate();
-    const node = S.nodeById[existing ? existing.id : S.data.orgs[S.data.orgs.length - 1].id];
+      description: modal.querySelector('#fDesc').value.trim(),
+      people: ensurePeople(splitCommas(modal.querySelector('#fPeople').value)),
+      tags: joinList(splitCommas(modal.querySelector('#fTags').value)),
+      keywords: joinList(splitCommas(modal.querySelector('#fKw').value)),
+      areas: joinList(readAreas()) };
+    let id;
+    if (existing) { id = existing.id; Object.assign(existing.row, vals); store.changed(); }
+    else { id = slug(name); store.addRow('orgs', { id, ...vals }); }
+    closeModal();
+    const node = S.nodeById[id];
     if (node) select(node);
     toast(existing ? 'Saved' : 'Organization added');
   };
@@ -79,15 +83,15 @@ export function projForm(org, existing) {
   modal.querySelector('#mGo').onclick = () => {
     const name = modal.querySelector('#fName').value.trim();
     if (!name) { modal.querySelector('#fErr').style.display = 'block'; return; }
-    const v = { name, desc: modal.querySelector('#fDesc').value.trim(),
-      people: splitCommas(modal.querySelector('#fPeople').value),
-      tags: splitCommas(modal.querySelector('#fTags').value),
+    const vals = { name, description: modal.querySelector('#fDesc').value.trim(),
+      people: ensurePeople(splitCommas(modal.querySelector('#fPeople').value)),
+      tags: joinList(splitCommas(modal.querySelector('#fTags').value)),
       url: modal.querySelector('#fUrl').value.trim(),
-      areas: readAreas(),
-      collab: [...modal.querySelector('#fCollab').selectedOptions].map(op => op.value) };
-    if (existing) Object.assign(existing, v);
-    else org.projects.push({ id: slug(name), extra: {}, ...v });
-    closeModal(); afterMutate(); select(S.nodeById[org.id]);
+      areas: joinList(readAreas()),
+      collab: joinList([...modal.querySelector('#fCollab').selectedOptions].map(op => op.value)) };
+    if (existing) { Object.assign(existing.row, vals); store.changed(); }
+    else store.addRow('projects', { id: slug(name), org_id: org.id, ...vals });
+    closeModal(); select(S.nodeById[org.id]);
     toast(existing ? 'Saved' : 'Project added');
   };
 }
@@ -98,14 +102,17 @@ export function linkForm(org) {
     <h3>Connect to another organization</h3>
     <div class="field"><label>Organization</label><select id="fTo">${
       others.map(o => `<option value="${esc(o.id)}">${esc(o.name)}</option>`).join('')}</select></div>
+    <div class="field"><label>Relationship type</label><select id="fType">${
+      Object.entries(LINK_TYPES).map(([k, v]) => `<option value="${k}" ${k === 'collaborate' ? 'selected' : ''}>${v.label}</option>`).join('')}</select></div>
     <div class="field"><label>Relationship label</label><input id="fLbl" placeholder="e.g. Joint research, Funding"></div>
     <div class="mrow"><button class="btn" id="mNo">Cancel</button>
     <button class="btn primary" id="mGo">Connect</button></div>`);
   modal.querySelector('#mNo').onclick = closeModal;
   modal.querySelector('#mGo').onclick = () => {
-    S.data.links.push({ a: org.id, b: modal.querySelector('#fTo').value,
-      label: modal.querySelector('#fLbl').value.trim() || 'connection', extra: {} });
-    closeModal(); afterMutate(); select(S.nodeById[org.id]); toast('Connection added');
+    const type = modal.querySelector('#fType').value;
+    store.addRow('links', { source_id: org.id, target_id: modal.querySelector('#fTo').value, type,
+      label: modal.querySelector('#fLbl').value.trim() || LINK_TYPES[type].label.toLowerCase() });
+    closeModal(); select(S.nodeById[org.id]); toast('Connection added');
   };
 }
 

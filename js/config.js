@@ -50,6 +50,12 @@ export const PALETTES = {
         ink:'#E9F2F3',muted:'#8FA5AB',labelBg:'rgba(11,18,20,.86)',ring:'#0B1214'},
 };
 
+export const LINK_TYPES = {
+  fund:        { label: 'Fund',        color: '#D97706' },
+  support:     { label: 'Support',     color: '#2563EB' },
+  collaborate: { label: 'Collaborate', color: '#0D9488' },
+};
+
 export const SANS = '-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif';
 export const RING_R = 760, RING_W = 26;
 

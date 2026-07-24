@@ -5,7 +5,7 @@
 
 import { parseCSV, serializeCSV, downloadFile } from './csv.js';
 
-const STORE_KEY = 'ahf-atlas-csv-v1';
+const STORE_KEY = 'ahf-ecosystem-map-csv-v2';
 
 /* Core columns are the ones the map itself understands. They can be edited row-by-row
    but not renamed or deleted. Extra columns added in the Data editor are preserved,
@@ -20,7 +20,7 @@ export const TABLE_DEFS = {
       { key:'location',    label:'Location',    type:'text',      core:true },
       { key:'url',         label:'URL',         type:'url',       core:true },
       { key:'description', label:'Description', type:'multiline', core:true },
-      { key:'people',      label:'People',      type:'list',      core:true },
+      { key:'people',      label:'People',      type:'reflist', ref:'people', core:true },
       { key:'tags',        label:'Tags',        type:'list',      core:true },
       { key:'keywords',    label:'Keywords',    type:'list',      core:true },
       { key:'areas',       label:'Areas',       type:'list',      core:true, hint:'agency|wellbeing|learning|creativity|purpose|social' },
@@ -33,11 +33,20 @@ export const TABLE_DEFS = {
       { key:'org_id',      label:'Org ID',      type:'ref', ref:'orgs', core:true },
       { key:'name',        label:'Name',        type:'text',      core:true },
       { key:'description', label:'Description', type:'multiline', core:true },
-      { key:'people',      label:'People',      type:'list',      core:true },
+      { key:'people',      label:'People',      type:'reflist', ref:'people', core:true },
       { key:'tags',        label:'Tags',        type:'list',      core:true },
       { key:'areas',       label:'Areas',       type:'list',      core:true },
       { key:'collab',      label:'Collab orgs', type:'reflist', ref:'orgs', core:true },
       { key:'url',         label:'URL',         type:'url',       core:true },
+    ],
+  },
+  people: {
+    label: 'People', file: 'data/people.csv', key: 'id',
+    columns: [
+      { key:'id',    label:'ID',    type:'text', core:true },
+      { key:'name',  label:'Name',  type:'text', core:true },
+      { key:'title', label:'Title', type:'text', core:true },
+      { key:'url',   label:'URL',   type:'url',  core:true },
     ],
   },
   links: {
@@ -45,6 +54,7 @@ export const TABLE_DEFS = {
     columns: [
       { key:'source_id', label:'From org', type:'ref', ref:'orgs', core:true },
       { key:'target_id', label:'To org',   type:'ref', ref:'orgs', core:true },
+      { key:'type',      label:'Type',     type:'text', core:true, hint:'fund | support | collaborate' },
       { key:'label',     label:'Label',    type:'text', core:true },
     ],
   },
@@ -155,6 +165,7 @@ export const store = {
     const i = t.rows.indexOf(row);
     if (i >= 0) t.rows.splice(i, 1);
     if (name === 'orgs' && row.id) this._cascadeOrgDelete(row.id);
+    if (name === 'people' && row.id) this._cascadePersonDelete(row.id);
     this.changed();
   },
 
@@ -166,6 +177,15 @@ export const store = {
       r.collab = collab.join('|');
     }
     links.rows = links.rows.filter(r => r.source_id !== orgId && r.target_id !== orgId);
+  },
+
+  _cascadePersonDelete(personId) {
+    for (const name of ['orgs', 'projects']) {
+      for (const r of this.tables[name].rows) {
+        r.people = (r.people || '').split('|').map(s => s.trim())
+          .filter(x => x && x !== personId).join('|');
+      }
+    }
   },
 
   setCell(name, row, key, value) {
@@ -219,6 +239,7 @@ export const store = {
     }
   },
 
-  /* set of valid org ids, for reference auditing */
-  orgIds() { return new Set(this.tables.orgs.rows.map(r => r.id).filter(Boolean)); },
+  /* set of valid ids in a table, for reference auditing */
+  idsOf(name) { return new Set(this.tables[name].rows.map(r => r.id).filter(Boolean)); },
+  orgIds() { return this.idsOf('orgs'); },
 };

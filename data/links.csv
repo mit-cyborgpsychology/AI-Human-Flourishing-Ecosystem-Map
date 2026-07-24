@@ -1,48 +1,48 @@
-source_id,target_id,label
-aha,openai,Joint RCT on chatbot wellbeing
-aha,cht,AHA Symposium dialogue
-aha,thrive,AHA Symposium dialogue
-aha,harvard-hfp,Flourishing science exchange
-aha,bkc,Ethics & Governance of AI Initiative
-harvard-hfp,baylor-isr,Global Flourishing Study co-leads
-harvard-hfp,gallup,GFS data collection
-harvard-hfp,cos,GFS open data
-harvard-hfp,templeton,GFS funding
-baylor-isr,templeton,GFS funding
-gloo,harvard-hfp,Benchmark uses flourishing dimensions
-oxford-wrc,gallup,World Happiness Report data
-oxford-wrc,wwm,Incubated the movement
-thrive,openai,Thrive AI Health venture
-stanford-hai,oecd,Shared AI metrics
-pai,openai,Partner network
-pai,deepmind,Partner network
-pai,msr,Partner network
-msr,openai,Strategic partnership
-ath,cht,Responsible tech community
-commonsense,anthropic,Youth AI Safety Institute support
-commonsense,openai,Youth AI Safety Institute support
-commonsense,hopelab,Joint youth wellbeing research
-mozilla,humanity-ai,Humanity AI coalition member
-ford,humanity-ai,Humanity AI coalition member
-macarthur,humanity-ai,Humanity AI coalition member
-omidyar,humanity-ai,Humanity AI coalition member
-wellcome,gates,Joint AI health evaluations
-commonsense,humane-intel,Youth AI safety evaluation partner
-noesis,harvard-hfp,Social AI white paper
-current-ai,ford,Founding partner
-current-ai,macarthur,Founding partner
-current-ai,deepmind,Founding partner
-aha,psychtech,Open Benchmark for the Human Impact of AI
-aha,anthropic,Research collaboration
-aha,commonsense,Youth & AI collaboration
-aha,omidyar,Program support
-aha,human-change,Program support
-aha,mit-raise,MIT Media Lab initiatives
-turing,ada,UK AI research ecosystem
-ai-now,data-society,NYC critical AI research
-mozilla,cht,Humane & trustworthy tech
-stanford-hai,gallup,AI Index survey data
-noesis,psychtech,Flourishing research network
-current-ai,mozilla,Public-interest AI
-unesco,oecd,Global AI governance
-wef,pai,Multistakeholder governance
+source_id,target_id,type,label
+aha,openai,collaborate,Joint RCT on chatbot wellbeing
+aha,cht,collaborate,AHA Symposium dialogue
+aha,thrive,collaborate,AHA Symposium dialogue
+aha,harvard-hfp,collaborate,Flourishing science exchange
+aha,bkc,collaborate,Ethics & Governance of AI Initiative
+harvard-hfp,baylor-isr,collaborate,Global Flourishing Study co-leads
+harvard-hfp,gallup,collaborate,GFS data collection
+harvard-hfp,cos,collaborate,GFS open data
+harvard-hfp,templeton,fund,GFS funding
+baylor-isr,templeton,fund,GFS funding
+gloo,harvard-hfp,collaborate,Benchmark uses flourishing dimensions
+oxford-wrc,gallup,collaborate,World Happiness Report data
+oxford-wrc,wwm,collaborate,Incubated the movement
+thrive,openai,collaborate,Thrive AI Health venture
+stanford-hai,oecd,collaborate,Shared AI metrics
+pai,openai,collaborate,Partner network
+pai,deepmind,collaborate,Partner network
+pai,msr,collaborate,Partner network
+msr,openai,collaborate,Strategic partnership
+ath,cht,collaborate,Responsible tech community
+commonsense,anthropic,support,Youth AI Safety Institute support
+commonsense,openai,support,Youth AI Safety Institute support
+commonsense,hopelab,collaborate,Joint youth wellbeing research
+mozilla,humanity-ai,support,Humanity AI coalition member
+ford,humanity-ai,support,Humanity AI coalition member
+macarthur,humanity-ai,support,Humanity AI coalition member
+omidyar,humanity-ai,support,Humanity AI coalition member
+wellcome,gates,collaborate,Joint AI health evaluations
+commonsense,humane-intel,collaborate,Youth AI safety evaluation partner
+noesis,harvard-hfp,collaborate,Social AI white paper
+current-ai,ford,collaborate,Founding partner
+current-ai,macarthur,collaborate,Founding partner
+current-ai,deepmind,collaborate,Founding partner
+aha,psychtech,collaborate,Open Benchmark for the Human Impact of AI
+aha,anthropic,collaborate,Research collaboration
+aha,commonsense,collaborate,Youth & AI collaboration
+aha,omidyar,support,Program support
+aha,human-change,support,Program support
+aha,mit-raise,collaborate,MIT Media Lab initiatives
+turing,ada,collaborate,UK AI research ecosystem
+ai-now,data-society,collaborate,NYC critical AI research
+mozilla,cht,collaborate,Humane & trustworthy tech
+stanford-hai,gallup,collaborate,AI Index survey data
+noesis,psychtech,collaborate,Flourishing research network
+current-ai,mozilla,collaborate,Public-interest AI
+unesco,oecd,collaborate,Global AI governance
+wef,pai,collaborate,Multistakeholder governance

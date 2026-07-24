@@ -1,12 +1,12 @@
 /* Right-hand detail panel: node + flourishing-area views, in-panel edit actions. */
 
-import { ROLES, AREAS } from './config.js';
+import { ROLES, AREAS, LINK_TYPES } from './config.js';
 import { S, roleColor } from './state.js';
 import { orgRoles, primaryRole } from './model.js';
 import { colorOf } from './graph.js';
+import { store } from './store.js';
 import { esc, initials, toast, confirmModal } from './dom.js';
 import { toScreen } from './canvas.js';
-import { afterMutate } from './mutate.js';
 import { orgForm, projForm, linkForm } from './forms.js';
 
 const panel = document.getElementById('panel'), pscroll = document.getElementById('panelScroll');
@@ -151,9 +151,10 @@ export function renderPanel(n) {
           const otherId = l.a === r.id ? l.b : l.a;
           const other = S.data.orgs.find(o => o.id === otherId);
           if (!other) return '';
+          const lt = LINK_TYPES[l.type] || LINK_TYPES.collaborate;
           return `<button class="rowitem" data-go="${esc(other.id)}">
             <span class="rdot" style="background:${roleColor(primaryRole(other))}"></span>
-            <span><span class="rname">${esc(other.name)}</span><br><span class="rsub">${esc(l.label || 'connection')}</span></span>
+            <span><span class="rname">${esc(other.name)}</span><br><span class="rsub"><span class="rtype" style="color:${lt.color};background:${lt.color}1A">${esc(lt.label)}</span>${esc(l.label || '')}</span></span>
             ${S.editMode ? `<span class="rx" data-dellink="${i}" title="Remove connection">✕</span>` : ''}
           </button>`; }).join('') + '</div></div>';
     }
@@ -178,14 +179,16 @@ export function renderPanel(n) {
   pscroll.querySelectorAll('[data-delproj]').forEach(el => el.addEventListener('click', ev => {
     ev.stopPropagation();
     confirmModal(`Delete project?`, () => {
-      r.projects = r.projects.filter(p => p.id !== el.dataset.delproj);
-      afterMutate(); select(S.nodeById[r.id]); toast('Project deleted');
+      const p = r.projects.find(x => x.id === el.dataset.delproj);
+      if (p) store.deleteRow('projects', p.row);
+      select(S.nodeById[r.id]); toast('Project deleted');
     });
   }));
   pscroll.querySelectorAll('[data-dellink]').forEach(el => el.addEventListener('click', ev => {
     ev.stopPropagation();
-    S.data.links.splice(+el.dataset.dellink, 1);
-    afterMutate(); select(S.nodeById[r.id]); toast('Connection removed');
+    const l = S.data.links[+el.dataset.dellink];
+    if (l) store.deleteRow('links', l.row);
+    select(S.nodeById[r.id]); toast('Connection removed');
   }));
   const eb = pscroll.querySelector('[data-edit]');
   if (eb) eb.addEventListener('click', () => isOrg ? orgForm(r) : projForm(org, r));
@@ -196,11 +199,8 @@ export function renderPanel(n) {
   const del = pscroll.querySelector('[data-del]');
   if (del) del.addEventListener('click', () => {
     confirmModal(`Delete “${r.name}” and all its ${isOrg ? 'projects and connections' : 'data'}?`, () => {
-      if (isOrg) {
-        S.data.orgs = S.data.orgs.filter(o => o.id !== r.id);
-        S.data.links = S.data.links.filter(l => l.a !== r.id && l.b !== r.id);
-      } else org.projects = org.projects.filter(p => p.id !== r.id);
-      afterMutate(); select(isOrg ? null : S.nodeById[org.id]); toast('Deleted');
+      store.deleteRow(isOrg ? 'orgs' : 'projects', r.row);
+      select(isOrg ? null : S.nodeById[org.id]); toast('Deleted');
     });
   });
 }
