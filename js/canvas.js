@@ -329,10 +329,26 @@ export function initInteraction() {
   cv.addEventListener('pointerup', endPointer);
   cv.addEventListener('pointercancel', endPointer);
   cv.addEventListener('wheel', e => {
-    e.preventDefault(); S.userMoved = true;
-    const nk = Math.min(3, Math.max(.3, S.zk * Math.exp(-e.deltaY * .0013)));
-    S.tx = e.clientX - (e.clientX - S.tx) * nk / S.zk;
-    S.ty = e.clientY - (e.clientY - S.ty) * nk / S.zk;
-    S.zk = nk;
+    e.preventDefault();
+    zoomAt(Math.exp(-e.deltaY * .0013), e.clientX, e.clientY);
   }, { passive: false });
+}
+
+export const ZOOM_MIN = .3, ZOOM_MAX = 3;
+
+/* Scale by `factor`, keeping the screen point (px,py) fixed. */
+export function zoomAt(factor, px, py) {
+  const nk = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, S.zk * factor));
+  if (nk === S.zk) return;
+  S.tx = px - (px - S.tx) * nk / S.zk;
+  S.ty = py - (py - S.ty) * nk / S.zk;
+  S.zk = nk;
+  S.userMoved = true;
+}
+
+/* Button zoom: anchor on the centre of the map area still visible beside the panel. */
+export function zoomStep(factor) {
+  const panelOpen = document.getElementById('panel').classList.contains('open');
+  const pad = (panelOpen && innerWidth > 760) ? Math.min(400, innerWidth) : 0;
+  zoomAt(factor, (S.W - pad) / 2, S.H / 2);
 }

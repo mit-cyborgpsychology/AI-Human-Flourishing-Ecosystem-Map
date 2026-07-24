@@ -72,9 +72,20 @@ header{position:fixed;top:0;left:0;right:0;padding:20px 24px;display:flex;
 .lrow .n{margin-left:auto;color:var(--faint);padding-left:16px;font-variant-numeric:tabular-nums}
 #legendHint{font-size:10px;color:var(--faint);margin-top:7px}
 
-#editDock{position:fixed;right:24px;bottom:22px;z-index:20;display:none;flex-direction:column;
-  gap:8px;align-items:flex-end}
+#rightDock{position:fixed;right:24px;bottom:22px;z-index:20;display:flex;flex-direction:column;
+  gap:10px;align-items:flex-end}
+#editDock{display:none;flex-direction:column;gap:8px;align-items:flex-end}
 #editDock.on{display:flex}
+
+#viewDock{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--hair);
+  border-radius:11px;box-shadow:var(--shadow);overflow:hidden}
+.iconbtn{width:36px;height:34px;background:none;border:0;border-bottom:1px solid var(--hair);
+  color:var(--ink);font-family:var(--sans);font-size:16px;font-weight:500;line-height:1;
+  cursor:pointer;display:grid;place-items:center;transition:.15s;padding:0}
+.iconbtn:last-child{border-bottom:0}
+.iconbtn:hover{color:var(--accent);background:var(--accent-soft)}
+.iconbtn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.iconbtn:disabled{color:var(--faint);cursor:default;background:none}
 
 #panel{position:fixed;top:0;right:0;bottom:0;width:min(400px,100vw);z-index:30;
   background:var(--surface);border-left:1px solid var(--hair);box-shadow:var(--shadow);
@@ -290,7 +301,7 @@ tr.flash td{animation:rowflash 2s ease-out}
   .search input{width:140px}.search input:focus{width:160px}
   #legend{left:12px;bottom:12px;padding:10px 12px}
   #legendHint{display:none}
-  #editDock{right:12px;bottom:12px}
+  #rightDock{right:12px;bottom:12px}
   #hint{display:none}
 }
 @media(prefers-reduced-motion:reduce){

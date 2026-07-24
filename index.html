@@ -33,9 +33,16 @@
 
 <div id="legend" role="group" aria-label="Filter by ecosystem role"></div>
 
-<div id="editDock">
-  <button class="btn primary" id="addOrgBtn">＋ Add organization</button>
-  <button class="btn" id="resetBtn">Reset to seed data</button>
+<div id="rightDock">
+  <div id="editDock">
+    <button class="btn primary" id="addOrgBtn">＋ Add organization</button>
+    <button class="btn" id="resetBtn">Reset to seed data</button>
+  </div>
+  <div id="viewDock" role="group" aria-label="View controls">
+    <button class="iconbtn" id="zoomInBtn" title="Zoom in" aria-label="Zoom in">+</button>
+    <button class="iconbtn" id="zoomOutBtn" title="Zoom out" aria-label="Zoom out">−</button>
+    <button class="iconbtn" id="fullBtn" title="Full page" aria-label="Enter full page"></button>
+  </div>
 </div>
 
 <aside id="panel" aria-live="polite">
