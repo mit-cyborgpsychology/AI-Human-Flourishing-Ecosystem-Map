@@ -2,11 +2,12 @@
    Saves write straight into the CSV store rows — the forms are just a
    friendlier surface over the same CSV tables the Data editor shows. */
 
-import { ROLES, AREAS, LINK_TYPES } from './config.js';
+import { ROLES, AREAS } from './config.js';
+import { directionField, sentence, orient, defaultLabel } from './relationship.js';
 import { S } from './state.js';
 import { store } from './store.js';
 import { joinList } from './csv.js';
-import { orgRoles, primaryRole, slug, ensurePeople } from './model.js';
+import { orgRoles, primaryRole, ensurePeople } from './model.js';
 import { esc, toast, openModal, closeModal, modal } from './dom.js';
 import { select, renderPanel } from './panel.js';
 import { refreshOverlay } from './overlay.js';
@@ -54,7 +55,7 @@ export function orgForm(existing) {
       areas: joinList(readAreas()) };
     let id;
     if (existing) { id = existing.id; Object.assign(existing.row, vals); store.changed(); }
-    else { id = slug(name); store.addRow('orgs', { id, ...vals }); }
+    else id = store.addRow('orgs', vals).id;   // the store mints the id from the name
     closeModal();
     const node = S.nodeById[id];
     if (node) select(node);
@@ -90,7 +91,7 @@ export function projForm(org, existing) {
       areas: joinList(readAreas()),
       collab: joinList([...modal.querySelector('#fCollab').selectedOptions].map(op => op.value)) };
     if (existing) { Object.assign(existing.row, vals); store.changed(); }
-    else store.addRow('projects', { id: slug(name), org_id: org.id, ...vals });
+    else store.addRow('projects', { org_id: org.id, ...vals });
     closeModal(); select(S.nodeById[org.id]);
     toast(existing ? 'Saved' : 'Project added');
   };
@@ -102,16 +103,25 @@ export function linkForm(org) {
     <h3>Connect to another organization</h3>
     <div class="field"><label>Organization</label><select id="fTo">${
       others.map(o => `<option value="${esc(o.id)}">${esc(o.name)}</option>`).join('')}</select></div>
-    <div class="field"><label>Relationship type</label><select id="fType">${
-      Object.entries(LINK_TYPES).map(([k, v]) => `<option value="${k}" ${k === 'collaborate' ? 'selected' : ''}>${v.label}</option>`).join('')}</select></div>
+    ${directionField('fType')}
+    <p class="relprev" id="fPrev"></p>
     <div class="field"><label>Relationship label</label><input id="fLbl" placeholder="e.g. Joint research, Funding"></div>
     <div class="mrow"><button class="btn" id="mNo">Cancel</button>
     <button class="btn primary" id="mGo">Connect</button></div>`);
+  const toSel = modal.querySelector('#fTo'), dirSel = modal.querySelector('#fType');
+  const preview = () => {
+    const other = others.find(o => o.id === toSel.value);
+    modal.querySelector('#fPrev').textContent =
+      sentence(org.name, other ? other.name : 'the other organization', dirSel.value);
+  };
+  toSel.addEventListener('change', preview);
+  dirSel.addEventListener('change', preview);
+  preview();
   modal.querySelector('#mNo').onclick = closeModal;
   modal.querySelector('#mGo').onclick = () => {
-    const type = modal.querySelector('#fType').value;
-    store.addRow('links', { source_id: org.id, target_id: modal.querySelector('#fTo').value, type,
-      label: modal.querySelector('#fLbl').value.trim() || LINK_TYPES[type].label.toLowerCase() });
+    const dir = dirSel.value;
+    store.addRow('links', { ...orient(org.id, toSel.value, dir),
+      label: modal.querySelector('#fLbl').value.trim() || defaultLabel(dir) });
     closeModal(); select(S.nodeById[org.id]); toast('Connection added');
   };
 }

@@ -51,11 +51,15 @@ export const PALETTES = {
 };
 
 /* `label` names the relationship type; outLabel/inLabel phrase it from the point of
-   view of the organization whose row you are reading, so direction is unambiguous. */
+   view of the organization whose row you are reading, so direction is unambiguous.
+   outPhrase/inPhrase are the same thing as a sentence, for the connection pickers. */
 export const LINK_TYPES = {
-  fund:        { label: 'Fund',        outLabel: 'Funds',       inLabel: 'Funded by',    color: '#D97706' },
-  support:     { label: 'Support',     outLabel: 'Supports',    inLabel: 'Supported by', color: '#2563EB' },
-  collaborate: { label: 'Collaborate', outLabel: 'Collaborate', inLabel: 'Collaborate',  color: '#0D9488' },
+  fund:        { label: 'Fund',        outLabel: 'Funds',       inLabel: 'Funded by',
+                 outPhrase: 'funds',   inPhrase: 'is funded by',    color: '#D97706' },
+  support:     { label: 'Support',     outLabel: 'Supports',    inLabel: 'Supported by',
+                 outPhrase: 'supports', inPhrase: 'is supported by', color: '#2563EB' },
+  collaborate: { label: 'Collaborate', outLabel: 'Collaborate', inLabel: 'Collaborate',
+                 outPhrase: 'collaborates with', inPhrase: 'collaborates with', color: '#0D9488' },
 };
 
 export const SANS = '-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif';

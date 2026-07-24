@@ -173,6 +173,9 @@ body.locked > :not(#gate){filter:blur(16px);pointer-events:none;user-select:none
 .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent);
   box-shadow:0 0 0 3px var(--accent-soft)}
 .ferr{color:var(--danger);font-size:11.5px;font-weight:500;margin-top:8px;display:none}
+/* live sentence under a relationship picker: "A is funded by B" */
+.relprev{font-size:12px;font-weight:550;color:var(--accent);background:var(--accent-soft);
+  border-radius:8px;padding:8px 11px;margin:-4px 0 12px;line-height:1.45}
 .mrow{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
 
 #toast{position:fixed;bottom:26px;left:50%;translate:-50% 0;z-index:90;background:var(--ink);
@@ -240,7 +243,14 @@ table.csvgrid tr:hover td.rowctl{background:var(--bg)}
 .cell:disabled{color:var(--ink);opacity:.85;cursor:default}
 .cell.badref{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--danger) 55%,transparent);
   color:var(--danger)}
-.cell.idcell{font-weight:600;color:var(--accent);min-width:110px}
+/* reference cells are a name picker, flattened to look like the other cells */
+select.cell{appearance:none;-webkit-appearance:none;cursor:pointer;min-height:31px;
+  min-width:150px;max-width:240px;padding-right:22px;
+  background-image:linear-gradient(45deg,transparent 50%,var(--faint) 50%),
+                   linear-gradient(135deg,var(--faint) 50%,transparent 50%);
+  background-position:calc(100% - 13px) 14px,calc(100% - 9px) 14px;
+  background-size:4px 4px;background-repeat:no-repeat}
+select.cell:disabled{cursor:default;background-image:none}
 .rowdel{background:none;border:0;cursor:pointer;color:var(--faint);font-size:12px;
   padding:6px 8px;border-radius:6px}
 .rowdel:hover{color:var(--danger)}

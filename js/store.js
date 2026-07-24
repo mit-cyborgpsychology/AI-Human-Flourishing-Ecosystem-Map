@@ -3,7 +3,7 @@
    Seed CSVs are fetched from data/*.csv; browser edits are persisted back to
    localStorage as CSV text, so what you edit is exactly what you export. */
 
-import { parseCSV, serializeCSV, downloadFile } from './csv.js';
+import { parseCSV, serializeCSV, downloadFile, splitList, joinList } from './csv.js';
 
 const STORE_KEY = 'ahf-ecosystem-map-csv-v2';
 
@@ -12,7 +12,7 @@ const STORE_KEY = 'ahf-ecosystem-map-csv-v2';
    persisted, exported, and searchable. Types: text · multiline · list · ref · url. */
 export const TABLE_DEFS = {
   orgs: {
-    label: 'Organizations', file: 'data/orgs.csv', key: 'id',
+    label: 'Organizations', file: 'data/orgs.csv', key: 'id', idBase: 'org',
     columns: [
       { key:'id',          label:'ID',          type:'text',      core:true },
       { key:'name',        label:'Name',        type:'text',      core:true },
@@ -27,10 +27,10 @@ export const TABLE_DEFS = {
     ],
   },
   projects: {
-    label: 'Projects', file: 'data/projects.csv', key: 'id',
+    label: 'Projects', file: 'data/projects.csv', key: 'id', idBase: 'project',
     columns: [
       { key:'id',          label:'ID',          type:'text',      core:true },
-      { key:'org_id',      label:'Org ID',      type:'ref', ref:'orgs', core:true },
+      { key:'org_id',      label:'Organization', type:'ref', ref:'orgs', core:true },
       { key:'name',        label:'Name',        type:'text',      core:true },
       { key:'description', label:'Description', type:'multiline', core:true },
       { key:'people',      label:'People',      type:'reflist', ref:'people', core:true },
@@ -41,7 +41,7 @@ export const TABLE_DEFS = {
     ],
   },
   people: {
-    label: 'People', file: 'data/people.csv', key: 'id',
+    label: 'People', file: 'data/people.csv', key: 'id', idBase: 'person',
     columns: [
       { key:'id',    label:'ID',    type:'text', core:true },
       { key:'name',  label:'Name',  type:'text', core:true },
@@ -60,6 +60,10 @@ export const TABLE_DEFS = {
   },
 };
 export const TABLE_NAMES = Object.keys(TABLE_DEFS);
+
+/* "Pattie Maes" → "pattie-maes" */
+export const slugify = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+  .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 export const store = {
   /* tables[name] = { columns:[colDef…], rows:[{key:value…}…] } */
@@ -151,10 +155,30 @@ export const store = {
   },
 
   /* ---------- row operations ---------- */
+  /* IDs are generated, never typed: a readable slug of the row's name, made
+     unique inside its table so two rows can never claim the same key. */
+  newId(name, seed) {
+    const def = TABLE_DEFS[name];
+    if (!def.key) return '';
+    const base = slugify(seed) || def.idBase || 'row';
+    const taken = this.idsOf(name);
+    if (!taken.has(base)) return base;
+    let n = 2;
+    while (taken.has(`${base}-${n}`)) n++;
+    return `${base}-${n}`;
+  },
+
   addRow(name, values = {}) {
     const t = this.tables[name];
+    const def = TABLE_DEFS[name];
     const row = {};
     for (const c of t.columns) row[c.key] = values[c.key] ?? '';
+    if (def.key) {
+      // honour a caller-supplied id only while it stays unique; otherwise mint one
+      const given = String(row[def.key] || '').trim();
+      row[def.key] = given && !this.idsOf(name).has(given)
+        ? given : this.newId(name, values.name || given);
+    }
     t.rows.push(row);
     this.changed();
     return row;
@@ -190,7 +214,40 @@ export const store = {
 
   setCell(name, row, key, value) {
     row[key] = value;
+    // a row still carrying a placeholder id ("org", "project-3") earns a readable
+    // one the moment it is named — every reference to it moves with it
+    if (key === 'name') this._rekeyPlaceholder(name, row);
     this.changed();
+  },
+
+  _rekeyPlaceholder(name, row) {
+    const def = TABLE_DEFS[name];
+    const oldId = def.key ? row[def.key] : '';
+    if (!oldId || !def.idBase) return;
+    if (!new RegExp(`^${def.idBase}(-\\d+)?$`).test(oldId)) return;  // already meaningful
+    const newId = this.newId(name, row.name);
+    if (!newId || newId === oldId) return;
+    row[def.key] = newId;
+    this._retarget(name, oldId, newId);
+  },
+
+  /* rewrite every reference to a row id after it changes */
+  _retarget(name, oldId, newId) {
+    const swap = list => joinList(splitList(list).map(x => x === oldId ? newId : x));
+    if (name === 'orgs') {
+      for (const r of this.tables.projects.rows) {
+        if (r.org_id === oldId) r.org_id = newId;
+        if (r.collab) r.collab = swap(r.collab);
+      }
+      for (const r of this.tables.links.rows) {
+        if (r.source_id === oldId) r.source_id = newId;
+        if (r.target_id === oldId) r.target_id = newId;
+      }
+    } else if (name === 'people') {
+      for (const t of ['orgs', 'projects']) {
+        for (const r of this.tables[t].rows) if (r.people) r.people = swap(r.people);
+      }
+    }
   },
 
   /* ---------- column operations ---------- */

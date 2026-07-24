@@ -76,13 +76,6 @@ export function orgAdjacency() {
   return adj;
 }
 
-export const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-  + '-' + Date.now().toString(36).slice(-4);
-
-/* Stable, human-readable slug (used for people ids: "Pattie Maes" → "pattie-maes") */
-export const stableSlug = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '')
-  .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-
 /* Map person display names to people.csv ids, creating rows for unknown names.
    Mutates the people table directly; the caller is responsible for store.changed(). */
 export function ensurePeople(names) {
@@ -90,8 +83,7 @@ export function ensurePeople(names) {
   return joinList(names.map(n => {
     const found = rows.find(r => r.id === n || (r.name || '').toLowerCase() === n.toLowerCase());
     if (found) return found.id;
-    let id = stableSlug(n) || 'person';
-    while (rows.some(r => r.id === id)) id += '-2';
+    const id = store.newId('people', n);
     const row = {};
     for (const c of store.tables.people.columns) row[c.key] = '';
     row.id = id; row.name = n;

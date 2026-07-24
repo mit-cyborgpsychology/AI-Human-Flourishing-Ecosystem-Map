@@ -13,8 +13,8 @@
 import { S } from './state.js';
 import { store, TABLE_DEFS, TABLE_NAMES } from './store.js';
 import { LIST_SEP, splitList, joinList, downloadFile } from './csv.js';
-import { slug, stableSlug } from './model.js';
 import { ROLES, AREAS, LINK_TYPES } from './config.js';
+import { directionField, directionValue, sentence, orient, defaultLabel } from './relationship.js';
 import { esc, toast, openModal, closeModal, modal, confirmModal } from './dom.js';
 
 let tab = 'orgs';
@@ -93,8 +93,10 @@ export function renderEditor() {
     : `Each tab is one CSV file — exactly what you get with Export and what Import expects.
        Multi-value cells are stored “${LIST_SEP}”-separated and edited as tags. Core columns drive the map
        and can’t be removed; add your own columns for notes, audit status, sources, etc.
-       ${S.editMode ? 'Cells save when you leave them. Red tags and cells reference an ID that doesn’t exist.'
-                    : 'Unlock editing to change cells.'}`;
+       Row IDs are generated from the name and kept unique, so they stay out of the grid —
+       they’re still in the exported CSV. ${
+       S.editMode ? 'Cells save when you leave them. Red tags reference an ID that doesn’t exist.'
+                  : 'Unlock editing to change cells.'}`;
 
   let html = `<div class="tabs">${TABLE_NAMES.map(n =>
       `<button class="tab ${n === tab ? 'on' : ''}" data-tab="${n}">${TABLE_DEFS[n].label} · ${store.tables[n].rows.length}</button>`).join('')}
@@ -127,8 +129,8 @@ export function renderEditor() {
 function buildGrid() {
   const t = store.tables[tab];
   const def = TABLE_DEFS[tab];
-  const idCounts = {};
-  if (def.key) for (const r of t.rows) idCounts[r[def.key]] = (idCounts[r[def.key]] || 0) + 1;
+  // the id column is machine-owned: generated on insert, kept in the CSV, never shown
+  const cols = t.columns.filter(c => c.key !== def.key);
 
   const rows = t.rows
     .map((row, idx) => ({ row, idx }))
@@ -142,7 +144,7 @@ function buildGrid() {
     });
 
   let html = `<div class="csvwrap"><table class="csvgrid"><thead><tr>${S.editMode ? '<th class="rowctl"></th>' : ''}`;
-  for (const c of t.columns) {
+  for (const c of cols) {
     html += `<th title="${esc(c.hint || c.key)}"><div class="colhead">
       <span class="colname">${esc(c.label)}</span>
       <span class="coltype">${esc(c.type)}</span>
@@ -158,23 +160,37 @@ function buildGrid() {
 
   for (const { row, idx } of rows) {
     html += `<tr data-idx="${idx}">${S.editMode ? `<td class="rowctl"><button class="rowdel" data-delrow="${idx}" title="Delete row">✕</button></td>` : ''}`;
-    for (const c of t.columns) {
+    for (const c of cols) {
       if (c.type === 'list' || c.type === 'reflist') { html += `<td>${tagCell(row, idx, c)}</td>`; continue; }
+      if (c.type === 'ref' && c.ref) { html += `<td>${refCell(row, idx, c)}</td>`; continue; }
       const v = row[c.key] ?? '';
-      let bad = '', badTitle = '';
-      if (c.type === 'ref' && v && !store.idsOf(c.ref).has(v.trim())) { bad = ' badref'; badTitle = `Unknown ${c.ref} ID`; }
-      if (def.key && c.key === def.key && v && idCounts[v] > 1) { bad = ' badref'; badTitle = 'Duplicate ID'; }
-      const idCls = (c.key === def.key || c.type === 'ref') ? ' idcell' : '';
-      html += `<td><textarea class="cell${idCls}${bad}" rows="1" data-idx="${idx}" data-key="${esc(c.key)}"
-        ${S.editMode ? '' : 'disabled'} ${badTitle ? `title="${esc(badTitle)}"` : ''} spellcheck="false">${esc(v)}</textarea></td>`;
+      html += `<td><textarea class="cell" rows="1" data-idx="${idx}" data-key="${esc(c.key)}"
+        ${S.editMode ? '' : 'disabled'} spellcheck="false">${esc(v)}</textarea></td>`;
     }
     if (tab === 'orgs') html += `<td>${projectsCell(row)}</td><td>${connectionsCell(row)}</td>`;
     if (tab === 'people') html += `<td>${affiliationsCell(row)}</td>`;
     html += '</tr>';
   }
   html += '</tbody></table></div>';
-  countText = `${rows.length} of ${t.rows.length} rows · ${t.columns.length} columns`;
+  countText = `${rows.length} of ${t.rows.length} rows · ${cols.length} columns`;
   return html;
+}
+
+/* ---------- single-reference cell: choose a row by name, never by id ---------- */
+function refCell(row, idx, col) {
+  const v = (row[col.key] || '').trim();
+  const options = store.tables[col.ref].rows.filter(r => r.id)
+    .map(r => ({ id: r.id, label: r.name || r.id }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+  const current = options.find(o => o.id === v);
+  const dangling = v && !current;
+  return `<select class="cell refsel${dangling ? ' badref' : ''}" data-idx="${idx}" data-key="${esc(col.key)}"
+    ${S.editMode ? '' : 'disabled'}
+    title="${esc(dangling ? `Unknown ${col.ref} reference: ${v}` : (current ? current.label : ''))}">
+    <option value="">— none —</option>
+    ${dangling ? `<option value="${esc(v)}" selected>⚠ ${esc(v)}</option>` : ''}
+    ${options.map(o => `<option value="${esc(o.id)}" ${o.id === v ? 'selected' : ''}>${esc(o.label)}</option>`).join('')}
+  </select>`;
 }
 
 /* ---------- generic multi-value tag cell ---------- */
@@ -230,7 +246,7 @@ function connectionsCell(orgRow) {
     const verb = outgoing ? LINK_TYPES[ty].outLabel : LINK_TYPES[ty].inLabel;
     const dir = outgoing ? '→' : '←';
     return `<span class="gtag conn${name ? '' : ' badtag'}" style="${name ? `color:${col};background:${col}1A;box-shadow:inset 0 0 0 1px ${col}55` : ''}"
-      ${S.editMode ? `data-editlink="${i}"` : `data-goto="orgs" data-gotoid="${esc(other)}"`}
+      ${S.editMode ? `data-editlink="${i}" data-editfrom="${esc(orgRow.id)}"` : `data-goto="orgs" data-gotoid="${esc(other)}"`}
       title="${esc(verb)} ${esc(name || other)}${r.label ? ' — ' + esc(r.label) : ''}${name ? '' : ' — unknown org ID: ' + esc(other)}">
       <span class="ttype" style="${name ? `background:${col}` : ''}">${esc(verb)}</span>
       <span class="tlabel">${dir} ${esc(name || other)}</span>
@@ -285,13 +301,13 @@ function wire(body) {
     const row = t.rows[+el.dataset.idx], key = el.dataset.key;
     const val = el.value.replace(/\r/g, '');
     if (!row || row[key] === val) return;
-    if ((tab === 'orgs' || tab === 'people') && key === 'id' && row.id && val.trim() && val.trim() !== row.id) {
-      const oldId = row.id, newId = val.trim();
-      renameId(tab, oldId, newId);
-      toast(`Renamed ID “${oldId}” → “${newId}” everywhere`);
-      return;
-    }
     store.setCell(tab, row, key, val);
+  }));
+
+  /* reference cells (org_id, from/to org) — a name picker, so ids stay valid */
+  body.querySelectorAll('select.refsel').forEach(el => el.addEventListener('change', () => {
+    const row = t.rows[+el.dataset.idx];
+    if (row) store.setCell(tab, row, el.dataset.key, el.value);
   }));
 
   /* tag navigation */
@@ -322,8 +338,7 @@ function wire(body) {
   }));
   const addRow = body.querySelector('#csvAddRow');
   if (addRow) addRow.addEventListener('click', () => {
-    const values = {};
-    if (def.key) values[def.key] = 'new-' + Date.now().toString(36).slice(-5);
+    const values = {};   // the id is minted by the store on insert
     if (tab === 'projects') { const first = store.tables.orgs.rows[0]; if (first) values.org_id = first.id; }
     if (tab === 'links') { const first = store.tables.orgs.rows[0]; if (first) { values.source_id = first.id; values.type = 'collaborate'; } }
     store.addRow(tab, values);
@@ -362,7 +377,7 @@ function wire(body) {
   /* org row: connections */
   body.querySelectorAll('[data-editlink]').forEach(el => el.addEventListener('click', ev => {
     if (ev.target.closest('.x')) return;
-    linkModal(+el.dataset.editlink);
+    linkModal(+el.dataset.editlink, el.dataset.editfrom);
   }));
   body.querySelectorAll('[data-dellink]').forEach(el => el.addEventListener('click', ev => {
     ev.stopPropagation();
@@ -467,29 +482,6 @@ function openLinkPicker(btn, orgId) {
   });
 }
 
-/* ============================== id renaming ============================== */
-function renameId(table, oldId, newId) {
-  if (table === 'orgs') {
-    for (const r of store.tables.orgs.rows) if (r.id === oldId) r.id = newId;
-    for (const r of store.tables.projects.rows) {
-      if (r.org_id === oldId) r.org_id = newId;
-      if (r.collab) r.collab = joinList(splitList(r.collab).map(x => x === oldId ? newId : x));
-    }
-    for (const r of store.tables.links.rows) {
-      if (r.source_id === oldId) r.source_id = newId;
-      if (r.target_id === oldId) r.target_id = newId;
-    }
-  } else if (table === 'people') {
-    for (const r of store.tables.people.rows) if (r.id === oldId) r.id = newId;
-    for (const name of ['orgs', 'projects']) {
-      for (const r of store.tables[name].rows) {
-        if (r.people) r.people = joinList(splitList(r.people).map(x => x === oldId ? newId : x));
-      }
-    }
-  }
-  store.changed();
-}
-
 /* ============================== modals ============================== */
 function newValueModal(col, apply) {
   const isPeople = col.type === 'reflist' && col.ref === 'people';
@@ -509,18 +501,9 @@ function newValueModal(col, apply) {
     if (!name) { modal.querySelector('#vErr').style.display = 'block'; return; }
     let value = name;
     if (isPeople) {
-      const rows = store.tables.people.rows;
-      const existing = rows.find(r => (r.name || '').toLowerCase() === name.toLowerCase());
-      if (existing) value = existing.id;
-      else {
-        let id = stableSlug(name) || 'person';
-        while (rows.some(r => r.id === id)) id += '-2';
-        const row = {};
-        for (const c of store.tables.people.columns) row[c.key] = '';
-        row.id = id; row.name = name;
-        rows.push(row);
-        value = id;
-      }
+      const existing = store.tables.people.rows
+        .find(r => (r.name || '').toLowerCase() === name.toLowerCase());
+      value = existing ? existing.id : store.addRow('people', { name }).id;
     }
     closeModal();
     apply(value);
@@ -529,42 +512,58 @@ function newValueModal(col, apply) {
 }
 
 function connectionModal(orgId, otherId) {
+  const a = orgName(orgId) || orgId, b = orgName(otherId) || otherId;
   openModal(`<span class="eyebrow">New connection</span>
-    <h3>${esc(orgName(orgId) || orgId)} → ${esc(orgName(otherId) || otherId)}</h3>
-    <p class="sub">Adds a row to links.csv. The type sets how this relationship is shown across the atlas.</p>
-    <div class="field"><label>Relationship type</label><select id="cType">${
-      Object.entries(LINK_TYPES).map(([k, v]) => `<option value="${k}" ${k === 'collaborate' ? 'selected' : ''}>${v.label}</option>`).join('')}</select></div>
+    <h3>${esc(a)} · ${esc(b)}</h3>
+    <p class="sub">Adds a row to links.csv. The relationship reads from ${esc(a)}’s side —
+      pick an incoming one (“funded by”, “supported by”) and the row is stored the other way round.</p>
+    ${directionField('cType')}
+    <p class="relprev" id="cPrev"></p>
     <div class="field"><label>Label</label><input id="cLbl" placeholder="e.g. Joint research, Program support"></div>
     <div class="mrow"><button class="btn" id="mNo">Cancel</button>
     <button class="btn primary" id="mGo">Connect</button></div>`);
+  const dirSel = modal.querySelector('#cType');
+  const preview = () => { modal.querySelector('#cPrev').textContent = sentence(a, b, dirSel.value); };
+  dirSel.addEventListener('change', preview);
+  preview();
   modal.querySelector('#mNo').onclick = () => { closeModal(); renderEditor(); };
   modal.querySelector('#mGo').onclick = () => {
-    const type = modal.querySelector('#cType').value;
-    store.addRow('links', { source_id: orgId, target_id: otherId, type,
-      label: modal.querySelector('#cLbl').value.trim() || LINK_TYPES[type].label.toLowerCase() });
+    const dir = dirSel.value;
+    store.addRow('links', { ...orient(orgId, otherId, dir),
+      label: modal.querySelector('#cLbl').value.trim() || defaultLabel(dir) });
     closeModal();
-    toast(`Connected to ${orgName(otherId) || otherId}`);
+    toast(`Connected to ${b}`);
   };
 }
 
-function linkModal(idx) {
+/* `from` is the organization whose row the connection was clicked on, so the
+   picker is phrased the same way the tag the curator just clicked was. */
+function linkModal(idx, from) {
   const r = store.tables.links.rows[idx];
   if (!r) return;
-  const a = orgName(r.source_id) || r.source_id, b = orgName(r.target_id) || r.target_id;
+  const subject = (from === r.source_id || from === r.target_id) ? from : r.source_id;
+  const other = subject === r.source_id ? r.target_id : r.source_id;
+  const a = orgName(subject) || subject, b = orgName(other) || other;
   const ty = LINK_TYPES[r.type] ? r.type : 'collaborate';
   openModal(`<span class="eyebrow">Connection · links.csv row ${idx + 2}</span>
-    <h3>${esc(a)} → ${esc(b)}</h3>
-    <div class="field"><label>Relationship type</label><select id="lType">${
-      Object.entries(LINK_TYPES).map(([k, v]) => `<option value="${k}" ${k === ty ? 'selected' : ''}>${v.label}</option>`).join('')}</select></div>
+    <h3>${esc(a)} · ${esc(b)}</h3>
+    <p class="sub">Read from ${esc(a)}’s side. Switching to an incoming relationship
+      flips which organization the row points at.</p>
+    ${directionField('lType', directionValue(ty, subject === r.target_id))}
+    <p class="relprev" id="lPrev"></p>
     <div class="field"><label>Label</label><input id="lLbl" value="${esc(r.label || '')}" placeholder="e.g. Joint research, Funding"></div>
     <div class="mrow">
       <button class="btn danger" id="mDel">Remove connection</button>
       <button class="btn" id="mNo">Cancel</button>
       <button class="btn primary" id="mGo">Save</button></div>`);
+  const dirSel = modal.querySelector('#lType');
+  const preview = () => { modal.querySelector('#lPrev').textContent = sentence(a, b, dirSel.value); };
+  dirSel.addEventListener('change', preview);
+  preview();
   modal.querySelector('#mNo').onclick = closeModal;
   modal.querySelector('#mDel').onclick = () => { closeModal(); store.deleteRow('links', r); toast('Connection removed'); };
   modal.querySelector('#mGo').onclick = () => {
-    r.type = modal.querySelector('#lType').value;
+    Object.assign(r, orient(subject, other, dirSel.value));
     r.label = modal.querySelector('#lLbl').value.trim();
     store.changed(); closeModal(); toast('Connection saved');
   };
@@ -583,9 +582,8 @@ function newProjectModal(orgId) {
   modal.querySelector('#mGo').onclick = () => {
     const name = modal.querySelector('#pName').value.trim();
     if (!name) { modal.querySelector('#pErr').style.display = 'block'; return; }
-    const id = slug(name);
-    store.addRow('projects', { id, org_id: orgId, name });
-    closeModal(); gotoRow('projects', id); toast('Project created — fill in the row');
+    const row = store.addRow('projects', { org_id: orgId, name });
+    closeModal(); gotoRow('projects', row.id); toast('Project created — fill in the row');
   };
 }
 
@@ -597,22 +595,30 @@ function newOrgModal(connectTo) {
     <div class="field"><label>Primary role</label><select id="oRole">${
       Object.entries(ROLES).filter(([k]) => k !== 'hub')
         .map(([k, r]) => `<option value="${k}">${r.label}</option>`).join('')}</select></div>
-    ${connectTo ? `<div class="field"><label>Relationship type</label><select id="oType">${
-      Object.entries(LINK_TYPES).map(([k, v]) => `<option value="${k}" ${k === 'collaborate' ? 'selected' : ''}>${v.label}</option>`).join('')}</select></div>
+    ${connectTo ? `${directionField('oType')}
+    <p class="relprev" id="oPrev"></p>
     <div class="field"><label>Connection label</label><input id="oLbl" placeholder="e.g. Joint research, Funding"></div>` : ''}
     <div class="ferr" id="oErr">Name is required.</div>
     <div class="mrow"><button class="btn" id="mNo">Cancel</button>
     <button class="btn primary" id="mGo">Create</button></div>`);
+  const nameIn = modal.querySelector('#oName');
+  if (connectTo) {
+    const dirSel = modal.querySelector('#oType'), other = orgName(connectTo) || connectTo;
+    const preview = () => { modal.querySelector('#oPrev').textContent =
+      sentence(other, nameIn.value.trim() || 'the new organization', dirSel.value); };
+    nameIn.addEventListener('input', preview);
+    dirSel.addEventListener('change', preview);
+    preview();
+  }
   modal.querySelector('#mNo').onclick = () => { closeModal(); renderEditor(); };
   modal.querySelector('#mGo').onclick = () => {
-    const name = modal.querySelector('#oName').value.trim();
+    const name = nameIn.value.trim();
     if (!name) { modal.querySelector('#oErr').style.display = 'block'; return; }
-    const id = slug(name);
-    store.addRow('orgs', { id, name, roles: modal.querySelector('#oRole').value });
+    const row = store.addRow('orgs', { name, roles: modal.querySelector('#oRole').value });
     if (connectTo) {
-      const type = modal.querySelector('#oType').value;
-      store.addRow('links', { source_id: connectTo, target_id: id, type,
-        label: (modal.querySelector('#oLbl')?.value || '').trim() || LINK_TYPES[type].label.toLowerCase() });
+      const dir = modal.querySelector('#oType').value;
+      store.addRow('links', { ...orient(connectTo, row.id, dir),
+        label: (modal.querySelector('#oLbl')?.value || '').trim() || defaultLabel(dir) });
     }
     closeModal();
     toast(`“${name}” created${connectTo ? ' and connected' : ''}`);
