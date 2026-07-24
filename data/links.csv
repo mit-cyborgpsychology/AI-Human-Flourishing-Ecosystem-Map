@@ -1,8 +1,6 @@
 source_id,target_id,type,label,source
 aha,openai,collaborate,Joint RCT on chatbot wellbeing,
 aha,cht,collaborate,AHA Symposium dialogue,
-aha,thrive,collaborate,AHA Symposium dialogue,
-aha,harvard-hfp,collaborate,Flourishing science exchange,
 aha,bkc,collaborate,Ethics & Governance of AI Initiative,
 harvard-hfp,baylor-isr,collaborate,Global Flourishing Study co-leads,
 harvard-hfp,gallup,collaborate,GFS data collection,
@@ -35,9 +33,7 @@ current-ai,deepmind,collaborate,Founding partner,
 aha,psychtech,collaborate,Open Benchmark for the Human Impact of AI,
 aha,anthropic,collaborate,Research collaboration,
 aha,commonsense,collaborate,Youth & AI collaboration,
-aha,omidyar,support,Program support,
-aha,human-change,support,Program support,
-aha,mit-raise,collaborate,MIT Media Lab initiatives,
+omidyar,aha,fund,Program support,
 turing,ada,collaborate,UK AI research ecosystem,
 ai-now,data-society,collaborate,NYC critical AI research,
 mozilla,cht,collaborate,Humane & trustworthy tech,
@@ -96,3 +92,9 @@ lumina,humanity-ai,support,Humanity AI founding coalition member,https://www.mac
 mellon,humanity-ai,support,Humanity AI founding coalition member,https://www.macfound.org/press/press-releases/humanity-ai-commits-500-million-to-build-a-people-centered-future-for-ai
 packard,humanity-ai,support,Humanity AI founding coalition member,https://www.macfound.org/press/press-releases/humanity-ai-commits-500-million-to-build-a-people-centered-future-for-ai
 siegel,humanity-ai,support,Humanity AI founding coalition member,https://www.macfound.org/press/press-releases/humanity-ai-commits-500-million-to-build-a-people-centered-future-for-ai
+google-org,aha,fund,fund,
+aha,govtech-sg,collaborate,collaborate,
+aha,current-ai,collaborate,collaborate,
+aha,msr,collaborate,collaborate,
+workday-fdn,aha,fund,fund,
+aha,noesis,collaborate,collaborate,
