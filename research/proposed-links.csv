@@ -1,0 +1,76 @@
+source_id,target_id,type,label,confidence,source
+harvard-hfp,oecd,collaborate,Flourishing Schools framework and evidence reviews,high,https://hfh.fas.harvard.edu/impact
+harvard-hfp,unesco,collaborate,Flourishing assessments in schools,medium,https://hfh.fas.harvard.edu/impact
+omidyar,harvard-hfp,support,Sponsored the HumanConnections.AI salon,medium,https://www.noesiscollaborative.org/
+stanford-hai,pai,collaborate,PAI leadership on the AI Index steering committee,high,https://hai.stanford.edu/ai-index/people-of-ai-index
+stanford-hai,ai2,collaborate,Ai2 scientist on the AI Index steering committee,high,https://hai.stanford.edu/ai-index/people-of-ai-index
+oxford-ethics,deepmind,collaborate,Speaker at the Oxford AI and Ethics Summit 2025,medium,https://afp.oxford-aiethics.ox.ac.uk/oxford-ai-and-ethics-summit-2025-agenda
+oxford-ethics,openai,collaborate,Speaker at the Oxford AI and Ethics Summit 2025,medium,https://afp.oxford-aiethics.ox.ac.uk/oxford-ai-and-ethics-summit-2025-agenda
+oxford-ethics,5rights,collaborate,Speaker at the Oxford AI and Ethics Summit 2025,medium,https://afp.oxford-aiethics.ox.ac.uk/oxford-ai-and-ethics-summit-2025-agenda
+oxford-ethics,pai,collaborate,Speaker at the Oxford AI and Ethics Summit 2025,low,https://afp.oxford-aiethics.ox.ac.uk/oxford-ai-and-ethics-summit-2025-agenda
+oxford-ethics,oecd,collaborate,Participant at the Oxford AI and Ethics Summit 2025,low,https://afp.oxford-aiethics.ox.ac.uk/oxford-ai-and-ethics-summit-2025-agenda
+chai,cfi,collaborate,Listed partner organization,high,https://humancompatible.ai/about/
+knight,bkc,fund,Founding funder of the Ethics and Governance of AI Fund,high,https://knightfoundation.org/press/releases/the-ethics-and-governance-of-artificial-intelligence-fund-commits-7-6-million-to-organizations-that-bolster-civil-society-efforts-around-the-world/
+omidyar,bkc,fund,Founding funder of the Ethics and Governance of AI Fund,high,https://knightfoundation.org/press/releases/the-ethics-and-governance-of-artificial-intelligence-fund-commits-7-6-million-to-organizations-that-bolster-civil-society-efforts-around-the-world/
+gates,cmu-hcii,fund,Co-funds the National Tutoring Observatory,high,https://hcii.cmu.edu/news/cmu-helps-national-tutoring-observatory-dataset
+baylor-isr,gallup,collaborate,Global Flourishing Study data collection partner,high,https://www.cos.io/gfs
+baylor-isr,cos,collaborate,Global Flourishing Study open data partner,high,https://www.cos.io/gfs
+baylor-isr,gloo,collaborate,Flourishing AI Benchmark built on the Global Flourishing Study framework,medium,https://thenewstack.io/former-intel-ceos-new-ai-benchmark-focuses-on-human-flourishing/
+gallup,cos,collaborate,Global Flourishing Study research partner,high,https://www.cos.io/gfs
+deepmind,wellcome,collaborate,Multi-year mental health AI research investment,high,https://blog.google/innovation-and-ai/technology/health/new-mental-health-ai-tools-research-treatment/
+cht,oxford-ethics,collaborate,Member of the Preserving What Makes Us Human working group,medium,https://centerforhumanetechnology.substack.com/p/announcing-the-preserving-what-makes
+mcgovern,ath,fund,Funded the Responsible AI Impact Report,high,https://alltechishuman.org/all-tech-is-human-blog/responsible-ai-impact-report-urgent-risks-emerging-safeguards-and-public-interest-solutions-impacting-society
+pai,omidyar,collaborate,Listed partner organization,high,https://partnershiponai.org/partners/
+pai,mozilla,collaborate,Listed partner organization,high,https://partnershiponai.org/partners/
+pai,bkc,collaborate,Listed partner organization,high,https://partnershiponai.org/partners/
+pai,turing,collaborate,Listed partner organization,high,https://partnershiponai.org/partners/
+psychtech,chai,collaborate,Co-sponsor of the 2026 Future of Meaning conference,high,https://www.psychoftech.org/conferences
+humanity-ai,ai-now,fund,"Inaugural grant, May 2026",high,https://humanityai.ai/humanity-ai-announces-more-than-18-million-in-new-grants-to-shape-ai-for-the-public-good/
+humanity-ai,pai,fund,"Inaugural grant, May 2026",high,https://humanityai.ai/humanity-ai-announces-more-than-18-million-in-new-grants-to-shape-ai-for-the-public-good/
+humanity-ai,data-society,fund,"AI Civics initiative grant, May 2026",high,https://humanityai.ai/humanity-ai-announces-more-than-18-million-in-new-grants-to-shape-ai-for-the-public-good/
+gates,openai,collaborate,Horizon1000 AI health initiative,high,https://www.geekwire.com/2026/gates-foundation-openai-launch-50m-ai-health-initiative-targeting-1000-clinics-in-africa/
+gates,anthropic,collaborate,Global health and development partnership,high,https://www.gatesfoundation.org/ideas/media-center/press-releases/2026/05/ai-anthropic-partnership
+workday-fdn,anthropic,collaborate,Solopreneurship Accelerator partner,high,"https://newsroom.workday.com/2026-05-12-Workday,-Anthropic,-and-Local-Initiatives-Support-Corporation-LISC-Launch-AI-Focused-Solopreneurship-Accelerator-Program"
+mcgovern,current-ai,fund,Core philanthropic partner,high,https://www.currentai.org/about
+mcgovern,aspen-digital,fund,Grantee of the foundation,high,https://www.mcgovern.org/2025-press-release/
+hopelab,openai,collaborate,Responsible AI for Youth Mental Health convening,medium,https://hopelab.org/stories/responsible-ai-for-youth-mental-health
+hopelab,anthropic,collaborate,Responsible AI for Youth Mental Health convening,medium,https://hopelab.org/stories/responsible-ai-for-youth-mental-health
+hopelab,deepmind,collaborate,Responsible AI for Youth Mental Health convening,low,https://hopelab.org/stories/responsible-ai-for-youth-mental-health
+gatherverse,harvard-hfp,collaborate,AI for Human Flourishing council participation,high,https://gatherverse.org/ai4hf/
+human-change,cht,support,Co-signatories of the Pro-Human AI Declaration,low,https://humanstatement.org
+digital-thriving,commonsense,collaborate,Joint teen generative-AI report,high,https://www.commonsensemedia.org/research/teen-and-young-adult-perspectives-on-generative-ai-patterns-of-use-excitements-and-concerns
+digital-thriving,hopelab,collaborate,Joint teen generative-AI report,high,https://hopelab.org/stories/teen-and-young-adult-perspectives-on-generative-ai
+ford,pai,fund,Foundation funder,high,https://www.fordfoundation.org/news-and-stories/news-and-press/news/humanity-ai-announces-more-than-18-million-in-new-grants-to-shape-ai-for-the-public-good/
+ford,ai-now,fund,Multiyear general operating support,medium,https://www.fordfoundation.org/news-and-stories/news-and-press/news/humanity-ai-announces-more-than-18-million-in-new-grants-to-shape-ai-for-the-public-good/
+ford,data-society,fund,Foundation funder,medium,https://www.fordfoundation.org/news-and-stories/news-and-press/news/humanity-ai-announces-more-than-18-million-in-new-grants-to-shape-ai-for-the-public-good/
+ford,aspen-digital,fund,Listed funder,medium,https://www.aspendigital.org/funders/
+macarthur,ai-now,fund,Foundation grantee,high,https://www.macfound.org/press/press-releases/10-million-to-advance-ai-by-and-for-people
+macarthur,data-society,fund,Foundation grantee,high,https://www.macfound.org/press/press-releases/10-million-to-advance-ai-by-and-for-people
+macarthur,pai,fund,Foundation grantee,high,https://www.macfound.org/grantee/partnership-on-artificial-intelligence-to-benefit-people-and-society-10114517/
+macarthur,aspen-digital,fund,Listed funder,medium,https://www.aspendigital.org/funders/
+omidyar,humane-intel,fund,Seed funding for AI auditing and red-teaming,high,https://omidyar.com/update/omidyar-network-launches-a-dedicated-funding-effort-to-promote-inclusive-and-responsible-development-of-generative-ai/
+omidyar,ai-now,fund,Generative AI funding effort grantee,high,https://omidyar.com/update/omidyar-network-launches-a-dedicated-funding-effort-to-promote-inclusive-and-responsible-development-of-generative-ai/
+omidyar,ada,support,Listed among supporters,low,https://www.adalovelaceinstitute.org/about/who-we-work-with/
+knight,pai,fund,AI for Local News grant,high,https://partnershiponai.org/knight-ai-for-local-news-grant/
+knight,aspen-digital,fund,Listed funder,high,https://www.aspendigital.org/funders/
+omidyar,noesis,fund,Sponsor of the HumanConnections.AI program,high,https://www.noesiscollaborative.org/our-programs
+noesis,stanford-hai,collaborate,Institution engaged in HumanConnections.AI programming,low,https://www.noesiscollaborative.org/our-programs
+noesis,bkc,collaborate,Partner listed in HumanConnections.AI programming,low,https://www.noesiscollaborative.org/our-programs
+humane-intel,unesco,collaborate,Co-published a red-teaming for social good playbook,medium,https://humane-intelligence.org
+encode,commonsense,collaborate,Co-led coalition opposing a state AI law moratorium,high,https://www.commonsensemedia.org/press-releases/common-sense-media-encode-ai-fairplay-young-peoples-alliance-lead-a-coalition-of-advocates-to-call-on
+encode,tech-justice,collaborate,Joint FTC complaint on an AI companion app,high,https://techjusticelaw.org/announcements/tjlp-young-peoples-alliance-and-encode-file-ftc-complaint-over-ai-chatbot-app-replikas-deceptive-practices-seek-ftc-investigation/
+future-society,oecd,collaborate,Contributor to OECD AI principles; Athens Roundtable co-hosted at the OECD,high,https://oecd.ai/en/wonk/how-we-shaped-ai-policy-in-2024
+future-society,unesco,support,Member of the UNESCO civil society network on AI ethics,medium,https://www.unesco.org/ethics-ai/en/civil-society-organizations/future-society
+dubai-future,wef,collaborate,Co-published the Top 10 Emerging Technologies report,high,https://www.zawya.com/en/press-release/research-and-studies/dubai-future-foundation-and-world-economic-forum-publish-top-10-emerging-technologies-of-2026-report-s2zycrd0
+govtech-sg,deepmind,collaborate,AI Agents Sandbox whitepaper,medium,https://technode.global/2026/05/20/singapore-unveils-new-ai-partnerships-at-atxsummit-2026/
+govtech-sg,openai,collaborate,National AI partnership announced 2026,low,https://www.cnbc.com/2026/05/20/singapore-google-openai-ai-partnerships-lab-investment-chatgpt-ai-agents-atxsummit-mddi.html
+unesco,turing,collaborate,Co-produced the Global AI Ethics and Governance Observatory,high,https://digital-skills-jobs.europa.eu/en/latest/news/unesco-launches-global-ai-ethics-and-governance-observatory-2024-global-forum-ethics
+eu-ai-office,anthropic,collaborate,Signatory of the GPAI Code of Practice,high,https://www.anthropic.com/news/eu-code-practice
+eu-ai-office,openai,collaborate,Signatory of the GPAI Code of Practice,medium,https://idpc.org.mt/news-latest/european-commission-publishes-full-list-of-ai-companies-signed-up-to-code-of-practice/
+eu-ai-office,deepmind,collaborate,Google signed the GPAI Code of Practice,low,https://www.ciodive.com/news/Google-european-union-AI-act-code-signatory/756343/
+mit-raise,commonsense,collaborate,Nonprofit partner in Responsible AI for America’s Youth,high,https://dayofai.org/news/day-of-ai-and-mit-raise-launch-national-movement-to-empower-students-and-educators-in-the-ai-age-3
+wef,anthropic,support,Reported member of the AI Governance Alliance,low,https://www.deepinspect.ai/blog/ai-governance-alliance
+wef,openai,support,Reported member of the AI Governance Alliance,low,https://www.deepinspect.ai/blog/ai-governance-alliance
+wef,deepmind,support,Reported member of the AI Governance Alliance,low,https://www.deepinspect.ai/blog/ai-governance-alliance
+artist-machine,openai,collaborate,Attendee organization at the AI & Creativity Summit,low,https://artistandthemachine.com/portfolio-item/the-ai-creativity-summit-nyc/
+artist-machine,wef,collaborate,Partner or attendee at the AI & Creativity Summit,low,https://artistandthemachine.com/portfolio-item/the-ai-creativity-summit-los-angeles/

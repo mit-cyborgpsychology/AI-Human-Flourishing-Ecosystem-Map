@@ -4,7 +4,7 @@
     {
       "name": "flourishing-atlas",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8471"],
+      "runtimeArgs": ["tools/devserver.py", "8471"],
       "port": 8471
     }
   ]

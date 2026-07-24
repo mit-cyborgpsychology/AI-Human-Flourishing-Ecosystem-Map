@@ -7,6 +7,24 @@ import { updateStats, renderLegend } from './legend.js';
 
 export const rand = (a, b) => a + Math.random() * (b - a);
 
+/* Organization node size scales from 0.5x (barely connected) to 3x (the busiest hub)
+   of R_BASE, along a sigmoid so the sparse tail stays small, the crowded middle
+   separates quickly, and the few dominant organizations read as clearly dominant. */
+const R_BASE = 8, MIN_SCALE = 0.5, MAX_SCALE = 3;
+const SIG_MID = 0.3, SIG_K = 8;
+const logistic = t => 1 / (1 + Math.exp(-SIG_K * (t - SIG_MID)));
+const S0 = logistic(0), S1 = logistic(1);
+/* normalized 0..1 sigmoid over the weight range */
+export const sigmoid01 = t => (logistic(t) - S0) / (S1 - S0);
+
+/* How strongly an edge reads, given how connected the organizations at its ends are.
+   Peripheral organizations' links recede so the dense core of the ecosystem stands out. */
+export function edgeProminence(e) {
+  if (e.kind === 'spine') return 1;
+  const ps = [e.s, e.t].map(n => n.prom).filter(p => p !== undefined);
+  return ps.length ? Math.min(...ps) : 1;
+}
+
 export function buildGraph() {
   const old = {}; S.nodes.forEach(n => old[n.id] = n);
   S.nodes = []; S.edges = []; S.nodeById = {}; S.adj = {};
@@ -38,16 +56,23 @@ export function buildGraph() {
       x: prev ? prev.x : Math.cos(ang) * R, y: prev ? prev.y : Math.sin(ang) * R, vx:0, vy:0 });
   });
 
-  // connection counts drive node size — highly connected orgs stand out
+  // Prominence drives node size and how strongly an organization's edges read.
+  // Weight = projects it leads + projects it collaborates on + cross-org connections.
   const degree = {};
   data.links.forEach(l => { degree[l.a] = (degree[l.a] || 0) + 1; degree[l.b] = (degree[l.b] || 0) + 1; });
+  const shared = {};
+  data.orgs.forEach(o => o.projects.forEach(p => (p.collab || []).forEach(c => { shared[c] = (shared[c] || 0) + 1; })));
+  const weightOf = o => o.projects.length + (shared[o.id] || 0) + (degree[o.id] || 0);
+  const maxW = Math.max(1, ...data.orgs.map(weightOf));
   data.orgs.forEach(o => {
     const prev = old[o.id], pr = primaryRole(o), hub = pr === 'hub';
     const deg = (degree[o.id] || 0) + Math.max(0, orgRoles(o).length - 1);
-    const r = (hub ? 16 : 7) + Math.min(o.projects.length * .7, 4) + Math.min(deg * 1.1, 8);
+    const weight = weightOf(o);
+    const prom = sigmoid01(weight / maxW);
+    const r = R_BASE * (MIN_SCALE + (MAX_SCALE - MIN_SCALE) * prom);
     const roleNode = nodeById['role:' + pr];
     const bx = hub ? 60 : (roleNode ? roleNode.ax : 0), by = hub ? -60 : (roleNode ? roleNode.ay : 0);
-    add({ id:o.id, kind:'org', ref:o, r, deg,
+    add({ id:o.id, kind:'org', ref:o, r, deg, weight, prom,
       x: prev ? prev.x : bx * .9 + rand(-120, 120), y: prev ? prev.y : by * .9 + rand(-120, 120), vx:0, vy:0 });
   });
 
@@ -72,7 +97,7 @@ export function buildGraph() {
     o.projects.forEach((p, j) => {
       const prev = old[p.id];
       const pa = Math.atan2(n.y, n.x) + (j / (o.projects.length || 1)) * Math.PI * 2;
-      add({ id:p.id, kind:'proj', ref:p, org:o, r:4,
+      add({ id:p.id, kind:'proj', ref:p, org:o, r:4, prom:n.prom,
         x: prev ? prev.x : n.x + Math.cos(pa) * (n.r + 40) + rand(-6, 6),
         y: prev ? prev.y : n.y + Math.sin(pa) * (n.r + 40) + rand(-6, 6), vx:0, vy:0 });
       edges.push({ s:n, t:nodeById[p.id], rest:n.r + 30 + (j % 3) * 8, kind:'proj' });

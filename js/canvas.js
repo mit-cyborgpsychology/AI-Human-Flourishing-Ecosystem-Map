@@ -2,7 +2,10 @@
 
 import { ROLES, AREAS, AREA_KEYS, RING_R, RING_W, SANS } from './config.js';
 import { S, theme } from './state.js';
-import { step, colorOf, nodeAreas, arcBounds, arcHit, visible } from './graph.js';
+import { step, colorOf, nodeAreas, arcBounds, arcHit, visible, edgeProminence } from './graph.js';
+
+/* Every cross-org connection draws identically: one weight, fully opaque. */
+const LINK_ALPHA = 1, LINK_WIDTH = 1.35;
 import { select, selectArea } from './panel.js';
 
 const cv = document.getElementById('net'), ctx = cv.getContext('2d');
@@ -89,7 +92,8 @@ export function draw() {
         let th = Math.atan2(n.y, n.x); while (th < s) th += Math.PI * 2;
         const t = Math.min(Math.max(th, s + .05), e - .05);
         const ax = Math.cos(t) * (RING_R - RING_W / 2 - 2), ay = Math.sin(t) * (RING_R - RING_W / 2 - 2);
-        let a = isOrgN ? .16 : .09, w = isOrgN ? .9 : .6;
+        const np = n.prom ?? 1;
+        let a = (isOrgN ? .16 : .09) * (.3 + .7 * np), w = isOrgN ? .9 : .6;
         if (S.selectedArea === k) { a = isOrgN ? .5 : .32; w = isOrgN ? 1.2 : .9; }
         else if (S.selectedArea) a = .02;
         if (focus && focus.id === n.id) { a = .85; w = 1.6; }
@@ -109,6 +113,14 @@ export function draw() {
     else if (e.kind === 'role') { a = .55; w = 1.15; col = colorOf(e.s); bend = .06; }
     else if (e.kind === 'spine') { a = .5; w = 1.3; col = colorOf(e.t); bend = .04; }
     else { a = .7; w = 1.5; col = PAL.link; bend = .13; grad = [colorOf(e.s), colorOf(e.t)]; }
+    // cross-org connections all read the same; only the structural edges (project
+    // spokes, role spokes) recede with how sparsely connected their ends are
+    if (e.kind === 'link') { a = LINK_ALPHA; w = LINK_WIDTH; }
+    else {
+      const ep = edgeProminence(e);
+      a *= .25 + .75 * ep;
+      w *= .6 + .4 * ep;
+    }
     if (!vis) a = .06;
     if (focus) {
       const on = inFocus(e.s.id) && inFocus(e.t.id) && (e.s.id === focus.id || e.t.id === focus.id);
@@ -204,7 +216,7 @@ export function draw() {
       font = '750 16px ' + SANS; fill = colorOf(n); ctx.letterSpacing = '1.6px'; boxH = 20; }
     else if (kind === 'org') {
       const hub = n.ref.role === 'hub';
-      const boost = Math.min(n.ref.projects.length * .125 + (n.deg || 0) * .225, 1.75);
+      const boost = 1.75 * (n.prom ?? 0);
       const zb = Math.min(2, Math.max(1, zk / .55));
       const fs = ((hub ? 7.5 : 6.5) + boost) * zb;
       font = (boost > .9 ? '680 ' : '570 ') + fs.toFixed(1) + 'px ' + SANS;

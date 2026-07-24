@@ -222,15 +222,17 @@ function connectionsCell(orgRow) {
   const cs = links.map((r, i) => ({ r, i })).filter(({ r }) => r.source_id === orgRow.id || r.target_id === orgRow.id);
   let h = '<div class="tagcell">';
   h += cs.map(({ r, i }) => {
-    const other = r.source_id === orgRow.id ? r.target_id : r.source_id;
+    const outgoing = r.source_id === orgRow.id;
+    const other = outgoing ? r.target_id : r.source_id;
     const name = orgName(other);
     const ty = LINK_TYPES[r.type] ? r.type : 'collaborate';
     const col = LINK_TYPES[ty].color;
-    const dir = r.source_id === orgRow.id ? '→' : '←';
+    const verb = outgoing ? LINK_TYPES[ty].outLabel : LINK_TYPES[ty].inLabel;
+    const dir = outgoing ? '→' : '←';
     return `<span class="gtag conn${name ? '' : ' badtag'}" style="${name ? `color:${col};background:${col}1A;box-shadow:inset 0 0 0 1px ${col}55` : ''}"
       ${S.editMode ? `data-editlink="${i}"` : `data-goto="orgs" data-gotoid="${esc(other)}"`}
-      title="${esc(LINK_TYPES[ty].label)}${r.label ? ' — ' + esc(r.label) : ''}${name ? '' : ' — unknown org ID: ' + esc(other)}">
-      <span class="ttype" style="${name ? `background:${col}` : ''}">${esc(LINK_TYPES[ty].label)}</span>
+      title="${esc(verb)} ${esc(name || other)}${r.label ? ' — ' + esc(r.label) : ''}${name ? '' : ' — unknown org ID: ' + esc(other)}">
+      <span class="ttype" style="${name ? `background:${col}` : ''}">${esc(verb)}</span>
       <span class="tlabel">${dir} ${esc(name || other)}</span>
       ${S.editMode ? `<span class="x" data-dellink="${i}" title="Remove connection">✕</span>` : ''}</span>`;
   }).join('');

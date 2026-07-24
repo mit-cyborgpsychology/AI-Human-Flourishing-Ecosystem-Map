@@ -152,9 +152,10 @@ export function renderPanel(n) {
           const other = S.data.orgs.find(o => o.id === otherId);
           if (!other) return '';
           const lt = LINK_TYPES[l.type] || LINK_TYPES.collaborate;
+          const verb = l.a === r.id ? lt.outLabel : lt.inLabel;
           return `<button class="rowitem" data-go="${esc(other.id)}">
             <span class="rdot" style="background:${roleColor(primaryRole(other))}"></span>
-            <span><span class="rname">${esc(other.name)}</span><br><span class="rsub"><span class="rtype" style="color:${lt.color};background:${lt.color}1A">${esc(lt.label)}</span>${esc(l.label || '')}</span></span>
+            <span><span class="rname">${esc(other.name)}</span><br><span class="rsub"><span class="rtype" style="color:${lt.color};background:${lt.color}1A">${esc(verb)}</span>${esc(l.label || '')}</span></span>
             ${S.editMode ? `<span class="rx" data-dellink="${i}" title="Remove connection">✕</span>` : ''}
           </button>`; }).join('') + '</div></div>';
     }
