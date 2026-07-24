@@ -44,10 +44,12 @@ export const AREAS = {
 export const AREA_KEYS = Object.keys(AREAS);
 
 export const PALETTES = {
+  /* labelBg is the plate behind map labels: a faint wash of the page colour, kept
+     light enough that the edges underneath still read through it. */
   light:{bg:'#F7F9FA',dots:'#E9EFF0',edge:'#93A9AF',edgeSoft:'#BDCBCE',link:'#0D9488',
-         ink:'#13272E',muted:'#63797F',labelBg:'rgba(247,249,250,.86)',ring:'#FFFFFF'},
+         ink:'#13272E',muted:'#63797F',labelBg:'rgba(247,249,250,.5)',ring:'#FFFFFF'},
   dark:{bg:'#0B1214',dots:'#162226',edge:'#52686E',edgeSoft:'#34464C',link:'#2DD4BF',
-        ink:'#E9F2F3',muted:'#8FA5AB',labelBg:'rgba(11,18,20,.86)',ring:'#0B1214'},
+        ink:'#E9F2F3',muted:'#8FA5AB',labelBg:'rgba(11,18,20,.5)',ring:'#0B1214'},
 };
 
 /* `label` names the relationship type; outLabel/inLabel phrase it from the point of
@@ -63,7 +65,7 @@ export const LINK_TYPES = {
 };
 
 export const SANS = '-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif';
-export const RING_R = 760, RING_W = 26;
+export const RING_R = 850, RING_W = 26;
 
 export const PATHWAY = [
   {roles:['funder'],        title:'Philanthropy',       sub:'Capital fuels the field'},

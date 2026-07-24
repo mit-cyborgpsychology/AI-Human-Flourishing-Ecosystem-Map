@@ -19,7 +19,8 @@ export function resize() {
   if (oW) { if (S.showRing && !S.userMoved) fitRing(); else { S.tx += (S.W - oW) / 2; S.ty += (S.H - oH) / 2; } }
 }
 export function fitRing() {
-  S.zk = Math.max(.24, Math.min(.9, Math.min(S.W, S.H) / (2 * (RING_R + 170))));
+  // pad past the ring itself so its area labels, drawn at RING_R + 64, stay on screen
+  S.zk = Math.max(.24, Math.min(.9, Math.min(S.W, S.H) / (2 * (RING_R + 250))));
   S.tx = S.W / 2; S.ty = S.H / 2;
 }
 export function initView() {

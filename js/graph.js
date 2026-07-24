@@ -46,7 +46,7 @@ export function buildGraph() {
 
   // role anchor nodes (skip 'hub' — the hub org links directly to the center)
   const roleKeys = Object.keys(ROLES).filter(k => k !== 'hub' && data.orgs.some(o => orgRoles(o).includes(k)));
-  const R = 470;
+  const R = 540;
   roleKeys.forEach((k, i) => {
     const ang = (i / roleKeys.length) * Math.PI * 2 - Math.PI / 2;
     const id = 'role:' + k;
@@ -88,7 +88,7 @@ export function buildGraph() {
     const n = nodeById[o.id];
     orgRoles(o).forEach((rk, ri) => {
       const rn = nodeById['role:' + rk];
-      if (n && rn) { edges.push({ s:rn, t:n, rest: ri > 0 ? 320 : 150, kind:'role', secondary: ri > 0 }); connect(rn, n); }
+      if (n && rn) { edges.push({ s:rn, t:n, rest: ri > 0 ? 380 : 215, kind:'role', secondary: ri > 0 }); connect(rn, n); }
     });
   });
   // org ↔ project
@@ -100,7 +100,7 @@ export function buildGraph() {
       add({ id:p.id, kind:'proj', ref:p, org:o, r:4, prom:n.prom,
         x: prev ? prev.x : n.x + Math.cos(pa) * (n.r + 40) + rand(-6, 6),
         y: prev ? prev.y : n.y + Math.sin(pa) * (n.r + 40) + rand(-6, 6), vx:0, vy:0 });
-      edges.push({ s:n, t:nodeById[p.id], rest:n.r + 30 + (j % 3) * 8, kind:'proj' });
+      edges.push({ s:n, t:nodeById[p.id], rest:n.r + 38 + (j % 3) * 10, kind:'proj' });
       connect(n, nodeById[p.id]);
     });
   });
@@ -170,6 +170,12 @@ export function visible(n) {
 }
 
 /* ---------- physics ---------- */
+/* The root and the role anchors are landmarks: they repel with a footprint far
+   larger than their drawn radius, so organizations keep clear of them and their
+   labels stay readable instead of being buried under the cluster they name. */
+const REPEL = 260;
+const repelR = n => n.kind === 'role' ? n.r * 5 : n.kind === 'root' ? n.r * 4 : n.r;
+
 export function step() {
   const nodes = S.nodes, edges = S.edges;
   const N = nodes.length;
@@ -178,7 +184,7 @@ export function step() {
       let dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy;
       if (d2 < 1) { dx = rand(-1, 1); dy = rand(-1, 1); d2 = 1; }
       if (d2 > 300000) continue;
-      const d = Math.sqrt(d2), rep = 210 * (a.r + b.r) / d2, fx = dx / d * rep, fy = dy / d * rep;
+      const d = Math.sqrt(d2), rep = REPEL * (repelR(a) + repelR(b)) / d2, fx = dx / d * rep, fy = dy / d * rep;
       a.vx -= fx; a.vy -= fy; b.vx += fx; b.vy += fy;
     } }
   for (const e of edges) {
@@ -190,7 +196,9 @@ export function step() {
   }
   for (const n of nodes) {
     if (n.kind === 'root') { n.vx += (n.ax - n.x) * 0.09; n.vy += (n.ay - n.y) * 0.09; }
-    else if (n.kind === 'role') { n.vx += (n.ax - n.x) * 0.05; n.vy += (n.ay - n.y) * 0.05; }
+    // role anchors hold their ring position firmly — their clusters arrange around
+    // them, not the other way round, so the labelled landmarks stay evenly spaced
+    else if (n.kind === 'role') { n.vx += (n.ax - n.x) * 0.14; n.vy += (n.ay - n.y) * 0.14; }
     else if (n.kind === 'org') {
       const g = n.ref.role === 'hub' ? 0.008 : 0.0016;
       n.vx -= n.x * g; n.vy -= n.y * g;
