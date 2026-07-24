@@ -1,0 +1,2204 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI × Human Flourishing — Ecosystem Atlas</title>
+<style>
+  :root{
+    --bg:#F7F9FA; --surface:#FFFFFF; --ink:#13272E; --muted:#63797F; --faint:#9AB0B5;
+    --hair:#E3EAEC; --hair2:#D3DEE0; --accent:#0D9488; --accent-soft:rgba(13,148,136,.08);
+    --danger:#C2455A; --shadow:0 10px 40px rgba(19,39,46,.10),0 1px 3px rgba(19,39,46,.06);
+    --sans:-apple-system,"SF Pro Text","Segoe UI",system-ui,"Helvetica Neue",sans-serif;
+  }
+  @media(prefers-color-scheme:dark){:root{
+    --bg:#0B1214; --surface:#121B1E; --ink:#E9F2F3; --muted:#8FA5AB; --faint:#5A6E74;
+    --hair:#1F2C31; --hair2:#2B3B41; --accent:#2DD4BF; --accent-soft:rgba(45,212,191,.09);
+    --danger:#F08096; --shadow:0 10px 40px rgba(0,0,0,.5),0 1px 3px rgba(0,0,0,.4);
+  }}
+  :root[data-theme="light"]{
+    --bg:#F7F9FA; --surface:#FFFFFF; --ink:#13272E; --muted:#63797F; --faint:#9AB0B5;
+    --hair:#E3EAEC; --hair2:#D3DEE0; --accent:#0D9488; --accent-soft:rgba(13,148,136,.08);
+    --danger:#C2455A; --shadow:0 10px 40px rgba(19,39,46,.10),0 1px 3px rgba(19,39,46,.06);
+  }
+  :root[data-theme="dark"]{
+    --bg:#0B1214; --surface:#121B1E; --ink:#E9F2F3; --muted:#8FA5AB; --faint:#5A6E74;
+    --hair:#1F2C31; --hair2:#2B3B41; --accent:#2DD4BF; --accent-soft:rgba(45,212,191,.09);
+    --danger:#F08096; --shadow:0 10px 40px rgba(0,0,0,.5),0 1px 3px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow:hidden;
+       -webkit-font-smoothing:antialiased}
+  canvas#net{position:fixed;inset:0;display:block;cursor:grab}
+  canvas#net.grabbing{cursor:grabbing}
+  canvas#net.pointing{cursor:pointer}
+
+  .eyebrow{font-size:10px;font-weight:600;letter-spacing:.18em;color:var(--accent);
+           text-transform:uppercase}
+
+  header{position:fixed;top:0;left:0;right:0;padding:20px 24px;display:flex;
+         justify-content:space-between;align-items:flex-start;gap:16px;pointer-events:none;z-index:20}
+  .titleblock{pointer-events:auto}
+  .titleblock h1{font-size:19px;font-weight:650;letter-spacing:-.01em;margin-top:5px}
+  .stats{font-size:11.5px;color:var(--muted);margin-top:4px}
+  .controls{pointer-events:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+            justify-content:flex-end}
+  .search{position:relative}
+  .search input{width:220px;background:var(--surface);border:1px solid var(--hair2);
+    border-radius:9px;padding:8px 12px 8px 32px;color:var(--ink);font-family:var(--sans);
+    font-size:12.5px;outline:none;transition:border-color .2s,width .25s,box-shadow .2s}
+  .search input:focus{border-color:var(--accent);width:260px;box-shadow:0 0 0 3px var(--accent-soft)}
+  .search input::placeholder{color:var(--faint)}
+  .search svg{position:absolute;left:11px;top:50%;translate:0 -50%;opacity:.55}
+  .btn{background:var(--surface);border:1px solid var(--hair2);border-radius:9px;
+    color:var(--ink);font-family:var(--sans);font-size:12px;font-weight:550;
+    padding:8px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;
+    transition:.18s;white-space:nowrap}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn:focus-visible,.search input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  :root[data-theme="dark"] .btn.primary,body .btn.primary{color:#fff}
+  @media(prefers-color-scheme:dark){.btn.primary{color:#06211D}}
+  :root[data-theme="dark"] .btn.primary{color:#06211D}
+  :root[data-theme="light"] .btn.primary{color:#fff}
+  .btn.primary:hover{filter:brightness(1.06);color:inherit}
+  .btn.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 35%,transparent)}
+  .btn.danger:hover{border-color:var(--danger)}
+
+  #legend{position:fixed;left:24px;bottom:22px;z-index:20;background:var(--surface);
+    border:1px solid var(--hair);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
+  #legend .eyebrow{color:var(--muted);display:block;margin-bottom:8px;letter-spacing:.14em}
+  .lrow{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:500;
+    color:var(--ink);padding:3px 0;cursor:pointer;user-select:none;background:none;border:0;
+    width:100%;text-align:left;font-family:var(--sans)}
+  .lrow:hover{color:var(--accent)}
+  .lrow.off{opacity:.3;text-decoration:line-through}
+  .ldot{width:8px;height:8px;border-radius:50%;flex:none}
+  .licon{width:16px;height:16px;flex:none}
+  .lrow .n{margin-left:auto;color:var(--faint);padding-left:16px;font-variant-numeric:tabular-nums}
+  #legendHint{font-size:10px;color:var(--faint);margin-top:7px}
+
+  #editDock{position:fixed;right:24px;bottom:22px;z-index:20;display:none;flex-direction:column;
+    gap:8px;align-items:flex-end}
+  #editDock.on{display:flex}
+
+  #panel{position:fixed;top:0;right:0;bottom:0;width:min(400px,100vw);z-index:30;
+    background:var(--surface);border-left:1px solid var(--hair);box-shadow:var(--shadow);
+    transform:translateX(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);
+    display:flex;flex-direction:column}
+  #panel.open{transform:none}
+  #panelScroll{overflow-y:auto;padding:24px 24px 40px;flex:1;scrollbar-width:thin;
+    scrollbar-color:var(--hair2) transparent}
+  .pclose{position:absolute;top:14px;right:14px;background:none;border:0;color:var(--muted);
+    cursor:pointer;font-size:15px;padding:8px;line-height:1;border-radius:8px;z-index:2}
+  .pclose:hover{color:var(--ink);background:var(--accent-soft)}
+  .chip{display:inline-flex;align-items:center;gap:7px;font-size:10px;font-weight:650;
+    letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border-radius:999px;
+    margin-bottom:13px;color:#fff}
+  .chiprow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+  .chiprow .chip{margin-bottom:0}
+  #panel h2{font-size:20px;font-weight:650;letter-spacing:-.01em;text-wrap:balance;
+    padding-right:20px}
+  .ploc{font-size:11.5px;color:var(--muted);margin-top:8px;display:flex;align-items:center;gap:6px}
+  .pdesc{font-size:13.5px;line-height:1.65;color:var(--ink);opacity:.85;margin-top:14px;max-width:62ch}
+  .sect{margin-top:22px}
+  .sect .eyebrow{color:var(--muted);letter-spacing:.14em;display:block;margin-bottom:9px}
+  .tags{display:flex;flex-wrap:wrap;gap:6px}
+  .tag{font-size:11px;font-weight:500;color:var(--accent);background:var(--accent-soft);
+    border-radius:6px;padding:4px 9px}
+  .tag.kw{color:var(--muted);background:color-mix(in srgb,var(--muted) 9%,transparent)}
+  .areatag{cursor:pointer;border:0;font-family:var(--sans);font-weight:600}
+  .areatag:hover{filter:brightness(1.12)}
+  .checks{display:grid;grid-template-columns:1fr 1fr;gap:5px 10px}
+  .check{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink);cursor:pointer}
+  .check input{accent-color:var(--accent)}
+  .people{display:flex;flex-wrap:wrap;gap:6px}
+  .person{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:500;color:var(--ink);
+    border:1px solid var(--hair);border-radius:999px;padding:4px 11px 4px 5px}
+  .avatar{width:21px;height:21px;border-radius:50%;flex:none;display:grid;place-items:center;
+    font-size:8.5px;color:#fff;font-weight:700}
+  .rowlist{display:flex;flex-direction:column;gap:6px}
+  .rowitem{display:flex;align-items:center;gap:10px;background:none;
+    border:1px solid var(--hair);border-radius:10px;padding:9px 12px;cursor:pointer;
+    transition:.16s;text-align:left;color:var(--ink);font-family:var(--sans);width:100%}
+  .rowitem:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .rowitem .rdot{width:7px;height:7px;border-radius:50%;flex:none}
+  .rowitem .rname{font-size:12.5px;font-weight:550}
+  .rowitem .rsub{font-size:10.5px;color:var(--muted);margin-top:1px}
+  .rowitem .rx{margin-left:auto;color:var(--faint);background:none;border:0;cursor:pointer;
+    font-size:13px;padding:4px 6px;border-radius:6px}
+  .rowitem .rx:hover{color:var(--danger)}
+  .plink{font-size:12px;font-weight:500;color:var(--accent);text-decoration:none;word-break:break-all}
+  .plink:hover{text-decoration:underline}
+  .pactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:24px;padding-top:16px;
+    border-top:1px solid var(--hair)}
+  .crumb{font-size:11px;font-weight:550;color:var(--muted);margin-bottom:12px;background:none;
+    border:0;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:var(--sans)}
+  .crumb:hover{color:var(--accent)}
+
+  #scrim{position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 32%,transparent);
+    z-index:40;display:none;align-items:center;justify-content:center;padding:20px}
+  #scrim{z-index:80}
+  #scrim.open{display:flex}
+  #modal{width:min(440px,100%);max-height:86vh;overflow-y:auto;background:var(--surface);
+    border:1px solid var(--hair);border-radius:14px;padding:24px;box-shadow:var(--shadow)}
+  #modal.shake{animation:shake .4s}
+  @keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+  #modal h3{font-size:15.5px;font-weight:650;margin:8px 0 4px}
+  #modal .sub{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:14px}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:10px;font-weight:600;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+  .field input,.field textarea,.field select{width:100%;background:var(--bg);
+    border:1px solid var(--hair2);border-radius:8px;color:var(--ink);
+    font-size:13px;font-family:var(--sans);padding:8px 11px;outline:none;transition:.18s}
+  .field textarea{min-height:74px;resize:vertical;line-height:1.5}
+  .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-soft)}
+  .ferr{color:var(--danger);font-size:11.5px;font-weight:500;margin-top:8px;display:none}
+  .mrow{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+
+  #toast{position:fixed;bottom:26px;left:50%;translate:-50% 0;z-index:60;background:var(--ink);
+    color:var(--bg);font-size:12px;font-weight:550;padding:10px 18px;border-radius:9px;
+    opacity:0;pointer-events:none;transition:opacity .3s,translate .3s;box-shadow:var(--shadow)}
+  #toast.show{opacity:1;translate:-50% -6px}
+
+  #hint{position:fixed;bottom:22px;left:50%;translate:-50% 0;z-index:10;font-size:11px;
+    color:var(--faint);pointer-events:none;transition:opacity 1s}
+
+  /* ---------- full-screen overlay (table / pathway views) ---------- */
+  #overlay{position:fixed;inset:0;z-index:50;background:var(--bg);display:none;flex-direction:column}
+  #overlay.open{display:flex}
+  #overlayHead{display:flex;align-items:flex-start;gap:16px;padding:18px 24px;
+    border-bottom:1px solid var(--hair);flex:none}
+  #overlayHead h2{font-size:18px;font-weight:650;letter-spacing:-.01em;margin-top:3px}
+  #overlayHead .eyebrow{color:var(--accent)}
+  #overlayTools{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  #overlayBody{flex:1;overflow:auto;padding:20px 24px 60px}
+
+  /* table view */
+  .tbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .tbar input,.tbar select{background:var(--surface);border:1px solid var(--hair2);border-radius:8px;
+    color:var(--ink);font-family:var(--sans);font-size:12.5px;padding:7px 11px;outline:none}
+  .tbar input:focus,.tbar select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .tcount{font-size:12px;color:var(--muted);margin-left:auto}
+  table.otable{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.otable th{text-align:left;font-size:10px;font-weight:650;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--hair2);
+    position:sticky;top:0;background:var(--bg);cursor:pointer;user-select:none;white-space:nowrap}
+  table.otable th:hover{color:var(--accent)}
+  table.otable td{padding:9px 10px;border-bottom:1px solid var(--hair);vertical-align:middle}
+  table.otable tr:hover td{background:var(--accent-soft)}
+  .oname{font-weight:600;cursor:pointer}
+  .oname:hover{color:var(--accent)}
+  .rolepills{display:flex;flex-wrap:wrap;gap:4px}
+  .rolepill{font-size:9.5px;font-weight:650;letter-spacing:.03em;color:#fff;border-radius:999px;
+    padding:2px 8px;white-space:nowrap}
+  .areapill{font-size:9.5px;font-weight:600;border-radius:999px;padding:2px 8px;white-space:nowrap}
+  .tnum{font-variant-numeric:tabular-nums;text-align:center}
+  .ticon{background:none;border:0;cursor:pointer;color:var(--muted);padding:4px 6px;border-radius:6px;font-size:13px}
+  .ticon:hover{color:var(--accent)}
+  .ticon.del:hover{color:var(--danger)}
+
+  /* pathway view */
+  .pathgrid{display:flex;gap:14px;align-items:stretch;min-width:min-content;padding-bottom:12px}
+  .pathcol{flex:1;min-width:190px;max-width:240px;background:var(--surface);border:1px solid var(--hair);
+    border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
+  .pathcol h3{font-size:12.5px;font-weight:700;padding:12px 14px 4px;display:flex;align-items:center;gap:8px}
+  .pathcol .stagesub{font-size:10.5px;color:var(--muted);padding:0 14px 10px}
+  .pathcol .stagestat{font-size:10px;color:var(--muted);padding:0 14px 10px;font-variant-numeric:tabular-nums}
+  .pathlist{display:flex;flex-direction:column;gap:6px;padding:0 10px 12px;overflow-y:auto}
+  .pathitem{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:9px;
+    border:1px solid var(--hair);cursor:pointer;background:var(--bg);transition:.15s;text-align:left;
+    font-family:var(--sans);color:var(--ink);width:100%}
+  .pathitem:hover,.pathitem.hot{border-color:var(--accent);background:var(--accent-soft)}
+  .pathitem.dim{opacity:.32}
+  .pathitem .pdot{width:8px;height:8px;border-radius:50%;flex:none}
+  .pathitem .pnm{font-size:11.5px;font-weight:600;line-height:1.25}
+  .pathitem .pj{margin-left:auto;font-size:10px;font-weight:700;color:var(--accent);
+    background:var(--accent-soft);border-radius:999px;padding:2px 7px;font-variant-numeric:tabular-nums}
+  .pathstep{align-self:center;color:var(--faint);flex:none;display:flex;align-items:center}
+  .pathnote{font-size:11.5px;color:var(--muted);margin-bottom:14px;max-width:80ch;line-height:1.55}
+  @media(max-width:760px){#overlayHead{flex-wrap:wrap}.pathcol{min-width:160px}}
+
+  @media(max-width:760px){
+    header{padding:14px}
+    .search input{width:140px}.search input:focus{width:160px}
+    #legend{left:12px;bottom:12px;padding:10px 12px}
+    #legendHint{display:none}
+    #editDock{right:12px;bottom:12px}
+    #hint{display:none}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *{transition-duration:.01ms!important;animation-duration:.01ms!important}
+  }
+</style>
+
+<canvas id="net" aria-label="Network map of organizations working on AI and human flourishing"></canvas>
+
+<header>
+  <div class="titleblock">
+    <span class="eyebrow">Ecosystem Atlas</span>
+    <h1>AI × Human Flourishing</h1>
+    <div class="stats" id="stats"></div>
+  </div>
+  <div class="controls">
+    <div class="search">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" type="search" placeholder="Search the network" autocomplete="off">
+    </div>
+    <button class="btn" id="pathwayBtn" title="View the pathway from funding to impact">Pathway to impact</button>
+    <button class="btn" id="tableBtn" title="Edit organizations in a table" style="display:none">Table editor</button>
+    <button class="btn" id="ringBtn" title="Show or hide the flourishing-areas ring">Hide ring</button>
+    <button class="btn" id="projBtn" title="Show or hide project nodes">Hide projects</button>
+    <button class="btn" id="exportBtn" title="Download the dataset as JSON">Export</button>
+    <button class="btn" id="editBtn"><span id="editLbl">Edit</span></button>
+  </div>
+</header>
+
+<div id="legend" role="group" aria-label="Filter by ecosystem role"></div>
+
+<div id="editDock">
+  <button class="btn primary" id="addOrgBtn">＋ Add organization</button>
+  <button class="btn" id="resetBtn">Reset to seed data</button>
+</div>
+
+<aside id="panel" aria-live="polite">
+  <button class="pclose" id="pclose" aria-label="Close panel">✕</button>
+  <div id="panelScroll"></div>
+</aside>
+
+<div id="overlay" role="dialog" aria-modal="true">
+  <div id="overlayHead">
+    <div><span class="eyebrow" id="ovEyebrow">View</span><h2 id="ovTitle"></h2></div>
+    <div id="overlayTools"></div>
+    <button class="btn" id="ovClose">✕ Close</button>
+  </div>
+  <div id="overlayBody"></div>
+</div>
+
+<div id="scrim"><div id="modal" role="dialog" aria-modal="true"></div></div>
+<div id="toast" role="status"></div>
+<div id="hint">Drag to explore · scroll to zoom · click any node</div>
+
+<script>
+'use strict';
+/* ============================== roles ============================== */
+const ROLES = {
+  hub:       {label:'Interdisciplinary Research to Impact Hub', c:{light:'#0D9488',dark:'#2DD4BF'},
+              icon:'M12 2l2 8 8 2-8 2-2 8-2-8-8-2 8-2z',
+              desc:'The convening center of the movement — multi-institution research programs anchoring the field.'},
+  academic:  {label:'Academic Research',     c:{light:'#2563EB',dark:'#5EA0F6'},
+              icon:'M12 4l10 5-10 5L2 9z M6 11v5c2 1.5 10 1.5 12 0v-5',
+              desc:'Universities and research centers building the evidence base on AI, wellbeing, and flourishing.'},
+  industry:  {label:'Industry Labs',         c:{light:'#7C3AED',dark:'#A78BFA'},
+              icon:'M6 6h12v12H6z M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3',
+              desc:'AI companies and labs studying — and shaping — how their systems affect the people who use them.'},
+  civil:     {label:'Civil Society',         c:{light:'#059669',dark:'#34D399'},
+              icon:'M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M2 20c0-3.3 2.7-6 6-6s6 2.7 6 6 M16 5a3 3 0 0 1 0 6 M17 14c2.5 0 5 2 5 6',
+              desc:'Nonprofits and advocacy groups pushing technology toward the public interest.'},
+  measure:   {label:'Measurement & Data',    c:{light:'#0891B2',dark:'#22D3EE'},
+              icon:'M3 21h18 M6 21v-6 M12 21v-11 M18 21v-16',
+              desc:'Organizations building the instruments — surveys, benchmarks, open data — that make flourishing measurable.'},
+  funder:    {label:'Philanthropy',          c:{light:'#D97706',dark:'#FBBF24'},
+              icon:'M2 6h20v12H2z M12 9a3 3 0 0 0 0 6 M6 12h.01 M18 12h.01',
+              desc:'Foundations and funds financing a people-centered future for AI.'},
+  policy:    {label:'Policy & Governance',   c:{light:'#64748B',dark:'#94A3B8'},
+              icon:'M4 21h16 M12 3L4 9h16z M6 9v12M10 9v12M14 9v12M18 9v12',
+              desc:'Institutes and intergovernmental bodies translating evidence into rules and norms.'},
+  community: {label:'Community & Convening', c:{light:'#C026D3',dark:'#E879F9'},
+              icon:'M4 5h16v10H9l-4 4V15H4z',
+              desc:'Movements and platforms bringing practitioners and the public into the conversation.'},
+};
+
+/* ============================== flourishing areas (outer ring) ============================== */
+const AREAS = {
+  agency:    {label:'Comprehension & Agency',              color:'#0EA5E9',
+              desc:'Understanding AI and staying in control of it — transparency, autonomy, and the capacity to act on one’s own judgment.'},
+  wellbeing: {label:'Physical & Mental Wellbeing',         color:'#10B981',
+              desc:'AI that protects and strengthens bodily and psychological health rather than eroding it.'},
+  learning:  {label:'Curiosity & Learning',                color:'#6366F1',
+              desc:'Technology that deepens knowledge, skills, and the joy of finding things out.'},
+  creativity:{label:'Creativity & Expression',             color:'#EC4899',
+              desc:'AI that expands — rather than replaces — human imagination, authorship, and voice.'},
+  purpose:   {label:'Sense of Purpose',                    color:'#F59E0B',
+              desc:'Meaning, direction, and character — a life that feels worth living in an AI-shaped world.'},
+  social:    {label:'Healthy Relationships & Social Lives',color:'#14B8A6',
+              desc:'Human connection, community, and healthy discourse in the age of AI companions and feeds.'},
+};
+const AREA_KEYS=Object.keys(AREAS);
+
+/* ============================== seed data ============================== */
+const SEED = {version:2, orgs:[
+ {id:'aha', name:'MIT Media Lab — AHA Program', role:'hub', roles:['hub','academic','measure','community'],
+  location:'Cambridge, MA, USA', url:'https://aha.media.mit.edu',
+  desc:'Advancing Humans with AI (AHA) is a multi-faculty research program at the MIT Media Lab studying how pervasive AI shapes the human experience — and how to design human-AI interaction that fosters flourishing rather than dependence. Launched in April 2025, AHA convenes academia, industry, and civil society around moonshot research on the psychological, social, and cognitive impact of AI.',
+  people:['Pattie Maes','Pat Pataranutaporn','Hiroshi Ishii','Valdemar Danry','Samantha Chan','Constanze Albrecht','Auren Liu','Chayapatr Archiwaranguprok','Mengying Fang','Jennifer Pfister'],
+  tags:['Human-AI Interaction','Flourishing','Cyborg Psychology'],
+  keywords:['wellbeing','benchmarks','agency','human experience of AI'],
+  projects:[
+   {id:'aha-atlas', name:'Atlas of Human-AI Interaction', people:['Hiroshi Ishii','Pattie Maes'],
+    desc:'A living map of empirical findings across the human-AI interaction literature — charting what we actually know about how AI affects people.', tags:['meta-research','mapping'], url:''},
+   {id:'aha-bench', name:'Benchmarks for Human Flourishing with AI', people:['Pat Pataranutaporn','Pattie Maes'],
+    desc:'Open benchmarks that evaluate AI systems by their impact on human cognitive, emotional, and social outcomes — not just model performance.', tags:['benchmarks','evaluation'], url:'https://www.media.mit.edu/projects/flourishing-benchmarks/overview/'},
+   {id:'aha-survey', name:'State of AI & Human Flourishing Survey', people:['Valdemar Danry','Pat Pataranutaporn'],
+    desc:'A recurring survey initiative examining how AI use relates to flourishing across populations.', tags:['survey','measurement'], url:''},
+   {id:'aha-observatory', name:'Global Observatory for the Human Impact of AI', people:['Pat Pataranutaporn'],
+    desc:'Monitoring outcomes of AI adoption worldwide, across cultures and contexts.', tags:['global','longitudinal'], url:''},
+   {id:'aha-futureyou', name:'Future You', people:['Chayapatr Archiwaranguprok','Constanze Albrecht'],
+    desc:'An interactive digital-twin system that lets people converse with their older self, shown to reduce anxiety and strengthen future self-continuity.', tags:['digital twin','self-reflection'], url:''},
+   {id:'aha-chatbot-wb', name:'How AI Chatbots Affect Social & Emotional Wellbeing', people:['Mengying Fang','Auren Liu'],
+    desc:'A large randomized controlled study — run with OpenAI — of how conversational AI use influences loneliness, socialization, and emotional dependence.', tags:['RCT','wellbeing','OpenAI'], url:''},
+   {id:'aha-memory', name:'AI-Implanted False Memories', people:['Pat Pataranutaporn','Samantha Chan'],
+    desc:'Experiments showing conversational AI can induce false memories — with implications for testimony, persuasion, and safety.', tags:['memory','manipulation'], url:''},
+   {id:'aha-bfai', name:'My Boyfriend is AI', people:['Constanze Albrecht','Pat Pataranutaporn'],
+    desc:'A computational ethnography of human-AI intimate relationships in online communities.', tags:['companionship','relationships'], url:''},
+   {id:'aha-elders', name:'Chatbots & Loneliness in Older Adults', people:['Auren Liu','Pattie Maes'],
+    desc:'Examining whether AI chatbots relieve or deepen isolation among seniors.', tags:['aging','loneliness'], url:''},
+   {id:'aha-grants', name:'AHA Micro Grants', people:[],
+    desc:'$5,000–$10,000 seed grants for innovative projects at the intersection of AI and human flourishing.', tags:['funding','seed grants'], url:''},
+   {id:'aha-openbench', name:'Open Benchmark for the Human Impact of AI', people:['Pat Pataranutaporn'],
+    desc:'An open benchmarking effort measuring AI’s human impact beyond static performance metrics — in collaboration with the Psychology of Technology Institute.', tags:['benchmark','collaboration'], url:''},
+  ]},
+
+ /* ---- academic ---- */
+ {id:'harvard-hfp', name:'Human Flourishing Program · Harvard', role:'academic',
+  location:'Cambridge, MA, USA', url:'https://hfh.fas.harvard.edu',
+  desc:'Founded in 2016 at Harvard’s Institute for Quantitative Social Science, the program studies flourishing as "a state in which all aspects of a person’s life are good" — and now runs a working group applying flourishing science to AI product decisions.',
+  people:['Tyler VanderWeele','Brendan Case'], tags:['flourishing science','wellbeing measurement'],
+  keywords:['happiness','meaning','virtue','relationships'],
+  projects:[
+   {id:'hfp-gfs', name:'Global Flourishing Study', people:['Tyler VanderWeele','Byron Johnson'],
+    desc:'A $43M longitudinal study of ~200,000 people across 22 countries — the largest dataset on what makes humans flourish.', tags:['longitudinal','global'], url:''},
+   {id:'hfp-ai', name:'AI for Human Flourishing Working Group', people:[],
+    desc:'Designing and testing a flourishing-grounded framework to guide decisions around AI products.', tags:['framework','applied ethics'], url:'https://hfh.fas.harvard.edu/ai-human-flourishing'},
+   {id:'hfp-measure', name:'The Flourishing Measure', people:['Tyler VanderWeele'],
+    desc:'A validated instrument measuring flourishing across happiness, health, meaning, character, relationships, and financial stability — widely used to evaluate interventions, including AI.', tags:['instrument','validation'], url:''},
+  ]},
+ {id:'stanford-hai', name:'Stanford HAI', role:'academic',
+  location:'Stanford, CA, USA', url:'https://hai.stanford.edu',
+  desc:'The Stanford Institute for Human-Centered AI advances AI research, education, and policy to improve the human condition — with the belief that AI should be collaborative, augmentative, and enhancing to human life.',
+  people:['Fei-Fei Li','James Landay','John Etchemendy'], tags:['human-centered AI','policy','education'],
+  keywords:['augmentation','societal impact'],
+  projects:[
+   {id:'hai-index', name:'AI Index Report', people:[],
+    desc:'The annual global report tracking AI progress, adoption, and societal impact — a shared evidence base for policymakers worldwide.', tags:['metrics','annual report'], url:''},
+   {id:'hai-del', name:'Digital Economy Lab', people:['Erik Brynjolfsson'],
+    desc:'Research on how AI transforms work, productivity, and human wellbeing across the economy.', tags:['economics','future of work'], url:''},
+  ]},
+ {id:'oxford-wrc', name:'Wellbeing Research Centre · Oxford', role:'academic',
+  location:'Oxford, UK', url:'https://wellbeing.hmc.ox.ac.uk',
+  desc:'Oxford’s centre for the science of wellbeing, studying how life circumstances — including technology — shape happiness at population scale.',
+  people:['Jan-Emmanuel De Neve'], tags:['wellbeing economics','happiness'],
+  keywords:['life satisfaction','workplace wellbeing'],
+  projects:[
+   {id:'wrc-whr', name:'World Happiness Report', people:['Jan-Emmanuel De Neve'],
+    desc:'The annual UN-partnered report ranking global happiness, produced with Gallup World Poll data.', tags:['global','annual report'], url:''},
+   {id:'wrc-work', name:'Work Wellbeing Score', people:['Jan-Emmanuel De Neve'],
+    desc:'Large-scale measurement of workplace wellbeing (with Indeed) — a template for how AI-era work should be evaluated by how people actually feel.', tags:['workplace','measurement'], url:''},
+  ]},
+ {id:'oii', name:'Oxford Internet Institute', role:'academic',
+  location:'Oxford, UK', url:'https://www.oii.ox.ac.uk',
+  desc:'Oxford’s multidisciplinary department for the study of life online — home to some of the most rigorous large-scale evidence on how digital technology and games actually affect wellbeing.',
+  people:['Andrew Przybylski','Victoria Nash'], tags:['internet studies','evidence'],
+  keywords:['screen time','adolescents','open data'],
+  projects:[
+   {id:'oii-wellbeing', name:'Digital Technology & Adolescent Wellbeing', people:['Andrew Przybylski'],
+    desc:'Large-scale, preregistered analyses testing — and often overturning — assumed harms of screens and games on young people.', tags:['adolescents','replication'], url:''},
+  ]},
+ {id:'oxford-ethics', name:'Institute for Ethics in AI · Oxford', role:'academic',
+  location:'Oxford, UK', url:'https://www.oxford-aiethics.ox.ac.uk',
+  desc:'Brings philosophy to the heart of AI ethics — examining what AI means for human values, democracy, and the good life.',
+  people:['John Tasioulas'], tags:['philosophy','ethics'],
+  keywords:['values','democracy','humanities'],
+  projects:[
+   {id:'oxe-values', name:'AI & Human Values', people:['John Tasioulas'],
+    desc:'Philosophical research on how AI should be shaped by — and accountable to — a rich account of the human good.', tags:['philosophy','the good life'], url:''},
+  ]},
+ {id:'cfi', name:'Leverhulme Centre for the Future of Intelligence', role:'academic',
+  location:'Cambridge, UK', url:'https://www.lcfi.ac.uk',
+  desc:'Cambridge’s interdisciplinary centre on the nature and impact of AI — working to ensure intelligent machines serve human values and society.',
+  people:['Stephen Cave'], tags:['interdisciplinary','AI futures'],
+  keywords:['narratives','trust','philosophy'],
+  projects:[
+   {id:'cfi-narratives', name:'Global AI Narratives', people:[],
+    desc:'How different cultures imagine AI — and how those stories shape what gets built and regulated.', tags:['culture','narratives'], url:''},
+  ]},
+ {id:'chai', name:'Center for Human-Compatible AI · Berkeley', role:'academic',
+  location:'Berkeley, CA, USA', url:'https://humancompatible.ai',
+  desc:'UC Berkeley center reorienting AI research toward provably beneficial systems that remain uncertain about — and deferential to — human preferences.',
+  people:['Stuart Russell'], tags:['alignment','beneficial AI'],
+  keywords:['assistance games','preferences'],
+  projects:[
+   {id:'chai-assist', name:'Assistance Games', people:['Stuart Russell'],
+    desc:'Formal models in which AI systems learn human objectives through interaction rather than assuming them.', tags:['theory','alignment'], url:''},
+  ]},
+ {id:'bkc', name:'Berkman Klein Center · Harvard', role:'academic',
+  location:'Cambridge, MA, USA', url:'https://cyber.harvard.edu',
+  desc:'Harvard’s center for internet and society, studying AI governance, human agency, and the public interest in networked technology.',
+  people:['Jonathan Zittrain'], tags:['internet & society','governance'],
+  keywords:['law','agency','public interest'],
+  projects:[
+   {id:'bkc-ai', name:'Ethics & Governance of AI Initiative', people:[],
+    desc:'A joint initiative with the MIT Media Lab on steering AI development toward the public good.', tags:['governance','MIT collaboration'], url:''},
+  ]},
+ {id:'citp', name:'Princeton CITP', role:'academic',
+  location:'Princeton, NJ, USA', url:'https://citp.princeton.edu',
+  desc:'Princeton’s Center for Information Technology Policy — rigorous, skeptical scholarship on what AI can and cannot do, and what that means for society.',
+  people:['Arvind Narayanan'], tags:['tech policy','evidence'],
+  keywords:['accountability','hype vs. reality'],
+  projects:[
+   {id:'citp-snakeoil', name:'AI Snake Oil', people:['Arvind Narayanan'],
+    desc:'Research and public writing separating genuine AI progress from hype — and its consequences for institutions and people.', tags:['public scholarship','criticism'], url:''},
+  ]},
+ {id:'yale-dec', name:'Digital Ethics Center · Yale', role:'academic',
+  location:'New Haven, CT, USA', url:'https://dec.yale.edu',
+  desc:'Studies the governance of digital innovation so that AI and data technologies serve human dignity and flourishing.',
+  people:['Luciano Floridi'], tags:['digital ethics','governance'],
+  keywords:['information philosophy','dignity'],
+  projects:[
+   {id:'yale-govdig', name:'Governing Digital Innovation', people:['Luciano Floridi'],
+    desc:'Frameworks for governing AI and data technologies so they serve human dignity rather than erode it.', tags:['governance','dignity'], url:''},
+  ]},
+ {id:'upenn-ppc', name:'Positive Psychology Center · UPenn', role:'academic',
+  location:'Philadelphia, PA, USA', url:'https://ppc.sas.upenn.edu',
+  desc:'The birthplace of positive psychology — the science of what makes life worth living — now extending flourishing research into the age of AI.',
+  people:['Martin Seligman'], tags:['positive psychology','PERMA'],
+  keywords:['flourishing','character strengths'],
+  projects:[
+   {id:'wwbp', name:'World Well-Being Project', people:['Lyle Ungar'],
+    desc:'Measuring psychological wellbeing at population scale from social-media language using computational methods.', tags:['NLP','measurement'], url:''},
+  ]},
+ {id:'cmu-hcii', name:'CMU Human-Computer Interaction Institute', role:'academic',
+  location:'Pittsburgh, PA, USA', url:'https://www.hcii.cmu.edu',
+  desc:'One of the world’s leading HCI departments, designing AI systems that augment human capability, learning, and health.',
+  people:[], tags:['HCI','augmentation'],
+  keywords:['learning science','interaction design'],
+  projects:[
+   {id:'cmu-tutor', name:'AI Tutoring & Learning', people:[],
+    desc:'Intelligent tutoring systems that measurably improve learning while keeping human agency central.', tags:['education','augmentation'], url:''},
+  ]},
+ {id:'turing', name:'The Alan Turing Institute', role:'academic',
+  location:'London, UK', url:'https://www.turing.ac.uk',
+  desc:'The UK’s national institute for data science and AI, directing research capacity toward public-good applications in health, environment, and society.',
+  people:[], tags:['national institute','public good'],
+  keywords:['data science','responsible AI'],
+  projects:[
+   {id:'turing-health', name:'AI for Health & Wellbeing', people:[],
+    desc:'National research applying AI to mental and physical health while safeguarding public trust.', tags:['health','public trust'], url:''},
+  ]},
+ {id:'uva-csc', name:'Contemplative Sciences Center · UVA', role:'academic',
+  location:'Charlottesville, VA, USA', url:'https://csc.virginia.edu',
+  desc:'The University of Virginia’s hub for contemplative research, convening an interdisciplinary group on AI-driven interventions for wellbeing and spirituality.',
+  people:['David Germano'], tags:['contemplative science','spirituality'],
+  keywords:['mindfulness','interventions'],
+  projects:[
+   {id:'csc-ai', name:'AI + Human Flourishing Initiative', people:[],
+    desc:'An interdisciplinary research interest group incubating AI interventions that enhance wellbeing and inner life.', tags:['interventions','interdisciplinary'], url:'https://csc.virginia.edu/research/ai-human-flourishing-initiative'},
+  ]},
+ {id:'baylor-isr', name:'Baylor Institute for Studies of Religion', role:'academic',
+  location:'Waco, TX, USA', url:'https://www.baylorisr.org',
+  desc:'Co-leads the Global Flourishing Study, bringing expertise on religion, character, and meaning to the empirical study of flourishing.',
+  people:['Byron Johnson'], tags:['religion','character'], keywords:['meaning','purpose'],
+  projects:[
+   {id:'isr-relig-health', name:'Religion, Health & Flourishing', people:['Byron Johnson'],
+    desc:'Research on how faith, community, and character contribute to human flourishing — bringing meaning and purpose into the empirical picture.', tags:['meaning','character'], url:''},
+  ]},
+
+ /* ---- industry ---- */
+ {id:'anthropic', name:'Anthropic · Societal Impacts', role:'industry',
+  location:'San Francisco, CA, USA', url:'https://www.anthropic.com/research/team/societal-impacts',
+  desc:'Anthropic’s technical research team studying how AI is actually used in the world — including large-scale analyses of values and emotional reliance in human-AI conversations, feeding directly into model safeguards.',
+  people:['Deep Ganguli'], tags:['societal impact','AI safety','values'],
+  keywords:['Clio','affective use','safeguards'],
+  projects:[
+   {id:'anthropic-values', name:'Values in the Wild', people:[],
+    desc:'The first large-scale empirical taxonomy of AI values, built from 700,000 real Claude conversations.', tags:['values','empirical'], url:''},
+   {id:'anthropic-econ', name:'Anthropic Economic Index', people:[],
+    desc:'Tracking how AI is changing work and the economy, from millions of real-world conversations.', tags:['economics','labor'], url:''},
+  ]},
+ {id:'openai', name:'OpenAI', role:'industry',
+  location:'San Francisco, CA, USA', url:'https://openai.com',
+  desc:'Builder of ChatGPT, increasingly investing in research on the emotional and social effects of conversational AI — including a joint randomized study with the MIT Media Lab on affective use and wellbeing.',
+  people:[], tags:['frontier AI','wellbeing research'],
+  keywords:['ChatGPT','affective computing'],
+  projects:[
+   {id:'openai-affective', name:'Affective Use & Emotional Wellbeing Study', people:[],
+    desc:'Joint research with MIT Media Lab analyzing millions of conversations and a 1,000-person RCT on how ChatGPT use affects loneliness and dependence.', tags:['RCT','MIT collaboration'], url:''},
+   {id:'openai-council', name:'Expert Council on Well-Being & AI', people:[],
+    desc:'External experts advising on how products should support healthy use — especially for teens and people in distress.', tags:['advisory','safeguards'], url:''},
+  ]},
+ {id:'deepmind', name:'Google DeepMind', role:'industry',
+  location:'London, UK', url:'https://deepmind.google',
+  desc:'Frontier lab whose ethics research examines what advanced AI assistants owe their users — including a landmark treatise on the ethics of AI assistants and human autonomy.',
+  people:['Iason Gabriel'], tags:['ethics research','AI assistants'],
+  keywords:['autonomy','alignment'],
+  projects:[
+   {id:'dm-assistants', name:'The Ethics of Advanced AI Assistants', people:['Iason Gabriel'],
+    desc:'A comprehensive research volume on how AI assistants should support — not supplant — human agency and flourishing.', tags:['ethics','agency'], url:''},
+   {id:'dm-habermas', name:'Habermas Machine', people:[],
+    desc:'An AI mediator that helps groups with divergent views find common ground, validated in large deliberation experiments.', tags:['deliberation','democracy'], url:''},
+  ]},
+ {id:'msr', name:'Microsoft Research', role:'industry',
+  location:'Redmond, WA, USA', url:'https://www.microsoft.com/en-us/research',
+  desc:'Studies how generative AI reshapes cognition and work — including influential research on AI’s effect on critical thinking and "tools for thought."',
+  people:['Lev Tankelevitch','Sean Rintel'], tags:['cognition','future of work'],
+  keywords:['critical thinking','productivity'],
+  projects:[
+   {id:'msr-thinking', name:'GenAI & Critical Thinking', people:['Lev Tankelevitch'],
+    desc:'Survey research on how knowledge workers’ confidence in AI shifts when and how they think critically.', tags:['cognition','knowledge work'], url:''},
+   {id:'msr-nfw', name:'New Future of Work', people:[],
+    desc:'A research initiative on making AI-era work productive, equitable, and meaningful.', tags:['work','hybrid'], url:''},
+  ]},
+ {id:'jigsaw', name:'Google Jigsaw', role:'industry',
+  location:'New York, NY, USA', url:'https://jigsaw.google.com',
+  desc:'A unit within Google that builds technology to counter threats to open societies — from toxicity and harassment online to polarization — so digital spaces stay healthy for people.',
+  people:['Yasmin Green'], tags:['online safety','healthy discourse'],
+  keywords:['toxicity','polarization','civility'],
+  projects:[
+   {id:'jig-perspective', name:'Perspective API', people:[],
+    desc:'Free machine-learning tools that help platforms and publishers host healthier conversations by detecting toxic comments.', tags:['discourse','moderation'], url:'https://perspectiveapi.com'},
+  ]},
+ {id:'ai2', name:'Allen Institute for AI (Ai2)', role:'industry',
+  location:'Seattle, WA, USA', url:'https://allenai.org',
+  desc:'A nonprofit AI lab building truly open models and applying AI to science, conservation, and the common good.',
+  people:[], tags:['nonprofit lab','open models'],
+  keywords:['openness','AI for good'],
+  projects:[
+   {id:'ai2-olmo', name:'OLMo — Open Language Models', people:[],
+    desc:'Fully open language models — weights, data, and training code — enabling transparent research on AI’s behavior and impact.', tags:['open source','transparency'], url:''},
+  ]},
+
+ /* ---- civil society ---- */
+ {id:'cht', name:'Center for Humane Technology', role:'civil',
+  location:'San Francisco, CA, USA', url:'https://www.humanetech.com',
+  desc:'The advocacy nonprofit behind The Social Dilemma, working to realign technology — now AI — with humanity’s interests, warning against systems that exploit human vulnerabilities under the guise of assistance.',
+  people:['Tristan Harris','Aza Raskin','Randima Fernando'], tags:['advocacy','attention economy'],
+  keywords:['persuasive tech','incentives'],
+  projects:[
+   {id:'cht-podcast', name:'Your Undivided Attention', people:['Tristan Harris','Aza Raskin'],
+    desc:'A leading podcast examining how AI and social technology shape society, attention, and wellbeing.', tags:['media','public education'], url:''},
+   {id:'cht-dilemma', name:'The AI Dilemma', people:['Tristan Harris','Aza Raskin'],
+    desc:'A widely viewed briefing on the race dynamics of AI deployment and what it would take to develop AI responsibly.', tags:['public education','risk'], url:''},
+  ]},
+ {id:'ath', name:'All Tech Is Human', role:'civil',
+  location:'New York, NY, USA', url:'https://alltechishuman.org',
+  desc:'Builds and unites the Responsible Tech ecosystem — mapping organizations, mentoring talent, and connecting people who want technology aligned with the public interest.',
+  people:['David Ryan Polgar'], tags:['responsible tech','talent'],
+  keywords:['ecosystem building','careers'],
+  projects:[
+   {id:'ath-guide', name:'Responsible Tech Guide', people:[],
+    desc:'An open map of the responsible-technology ecosystem: organizations, career paths, and university programs.', tags:['mapping','open resource'], url:''},
+  ]},
+ {id:'pai', name:'Partnership on AI', role:'civil',
+  location:'San Francisco, CA, USA', url:'https://partnershiponai.org',
+  desc:'A multistakeholder nonprofit uniting industry, civil society, and academia to develop shared norms for AI that benefits people and society.',
+  people:['Rebecca Finlay'], tags:['multistakeholder','norms'],
+  keywords:['shared prosperity','guidelines'],
+  projects:[
+   {id:'pai-prosperity', name:'AI & Shared Prosperity Initiative', people:[],
+    desc:'Guidelines for steering AI toward expanding — not concentrating — economic opportunity.', tags:['economics','labor'], url:''},
+  ]},
+ {id:'psychtech', name:'Psychology of Technology Institute', role:'civil',
+  location:'Los Angeles / Berkeley, CA, USA', url:'https://www.psychoftech.org',
+  desc:'A nonprofit network of hundreds of behavioral scientists — psychologists, sociologists, philosophers, and computer scientists — advancing the science of the human-technology relationship so AI can be designed for psychological health.',
+  people:['Nathanael Fast','Juliana Schroeder'], tags:['behavioral science','psychology'],
+  keywords:['tech and mind','research network'],
+  projects:[
+   {id:'pt-newsletter', name:'Psychology of Technology Briefings', people:[],
+    desc:'Translating behavioral-science research on AI and technology into guidance for designers, funders, and policymakers.', tags:['translation','public scholarship'], url:''},
+  ]},
+ {id:'commonsense', name:'Common Sense Media', role:'civil',
+  location:'San Francisco, CA, USA', url:'https://www.commonsensemedia.org',
+  desc:'The leading kids-and-technology nonprofit, now rating AI products for youth safety and running a dedicated institute studying how AI affects children and families.',
+  people:['James P. Steyer'], tags:['children','media literacy','AI safety'],
+  keywords:['families','ratings','youth'],
+  projects:[
+   {id:'cs-yasi', name:'Youth AI Safety Institute', people:[],
+    desc:'Research and evaluation hub focused on protecting young people in the age of AI, working with technical evaluators and academic partners.', tags:['youth safety','evaluation'], url:''},
+   {id:'cs-ratings', name:'AI Ratings & Reviews', people:[],
+    desc:'Independent ratings of AI products for age-appropriateness, safety, and impact on kids.', tags:['ratings','transparency'], url:''},
+  ]},
+ {id:'data-society', name:'Data & Society', role:'civil',
+  location:'New York, NY, USA', url:'https://datasociety.net',
+  desc:'An independent research institute studying the social implications of data-centric technologies — grounding AI debates in how systems actually land in people’s lives.',
+  people:['danah boyd'], tags:['social research','tech & society'],
+  keywords:['labor','governance','ethnography'],
+  projects:[
+   {id:'ds-aia', name:'Algorithmic Impact Methods', people:['danah boyd'],
+    desc:'Developing methods to assess how automated systems affect the people and communities subject to them.', tags:['impact assessment','methods'], url:''},
+  ]},
+ {id:'ai-now', name:'AI Now Institute', role:'civil',
+  location:'New York, NY, USA', url:'https://ainowinstitute.org',
+  desc:'Policy research on the concentration of power in the AI industry — and what accountability to the public would actually require.',
+  people:['Amba Kak','Sarah Myers West'], tags:['accountability','power'],
+  keywords:['policy research','industry analysis'],
+  projects:[
+   {id:'ainow-landscape', name:'Landscape of AI Power', people:['Amba Kak','Sarah Myers West'],
+    desc:'An annual report mapping how concentrated compute, data, and capital shape whose interests AI serves.', tags:['power','annual report'], url:''},
+  ]},
+ {id:'mozilla', name:'Mozilla Foundation', role:'civil',
+  location:'San Francisco, CA, USA', url:'https://foundation.mozilla.org',
+  desc:'The nonprofit behind Firefox, campaigning and grantmaking for trustworthy AI — and a member of the Humanity AI funding coalition.',
+  people:[], tags:['trustworthy AI','open internet'],
+  keywords:['advocacy','grantmaking'],
+  projects:[
+   {id:'moz-trust', name:'Trustworthy AI', people:[],
+    desc:'Advocacy, research, and grants advancing AI that is accountable to people and communities.', tags:['trustworthy AI','advocacy'], url:''},
+  ]},
+
+ /* ---- measurement ---- */
+ {id:'gloo', name:'Gloo · Flourishing AI', role:'measure',
+  location:'Boulder, CO, USA', url:'https://gloo.com/flourishing-hub/research',
+  desc:'A technology platform whose Flourishing AI initiative benchmarks how well AI models’ answers actually help people flourish, using seven research-backed dimensions from flourishing science.',
+  people:[], tags:['benchmark','values alignment'],
+  keywords:['FAI benchmark','faith ecosystem'],
+  projects:[
+   {id:'gloo-fai', name:'Flourishing AI (FAI) Benchmark', people:[],
+    desc:'Scores leading AI models on seven flourishing dimensions drawn from the Global Flourishing Study framework.', tags:['benchmark','evaluation'], url:''},
+  ]},
+ {id:'gallup', name:'Gallup', role:'measure',
+  location:'Washington, DC, USA', url:'https://www.gallup.com',
+  desc:'The global analytics firm whose World Poll underpins much of the world’s wellbeing evidence — and the fieldwork engine of the Global Flourishing Study.',
+  people:[], tags:['polling','global data'],
+  keywords:['World Poll','wellbeing analytics'],
+  projects:[
+   {id:'gallup-poll', name:'Gallup World Poll', people:[],
+    desc:'Continuous surveys across 140+ countries — the data backbone of the World Happiness Report and global wellbeing research.', tags:['survey','global'], url:''},
+  ]},
+ {id:'positive-ai', name:'Positive AI Labs', role:'measure',
+  location:'USA', url:'https://positiveailabs.org',
+  desc:'A nonprofit developing open-source datasets and evaluations that guide frontier AI models toward human values and a pluralistic understanding of human flourishing.',
+  people:[], tags:['evaluations','open datasets'],
+  keywords:['values','frontier models','flourishing'],
+  projects:[
+   {id:'pai-evals', name:'Flourishing Evaluations', people:[],
+    desc:'Open evaluation suites measuring whether model behavior supports human values and flourishing across cultures.', tags:['benchmark','open source'], url:''},
+  ]},
+ {id:'cos', name:'Center for Open Science', role:'measure',
+  location:'Charlottesville, VA, USA', url:'https://www.cos.io',
+  desc:'Champions open, reproducible research — hosting the Global Flourishing Study’s open data so the science of flourishing is verifiable by anyone.',
+  people:['Brian Nosek'], tags:['open science','reproducibility'],
+  keywords:['open data','preregistration'],
+  projects:[
+   {id:'cos-osf', name:'Open Science Framework', people:['Brian Nosek'],
+    desc:'The open infrastructure hosting the Global Flourishing Study’s data — enabling transparent, reproducible flourishing research.', tags:['infrastructure','open data'], url:''},
+  ]},
+
+ /* ---- philanthropy ---- */
+ {id:'templeton', name:'John Templeton Foundation', role:'funder',
+  location:'West Conshohocken, PA, USA', url:'https://www.templeton.org',
+  desc:'Major philanthropic funder of the science of human flourishing — including the Global Flourishing Study — supporting research on character, meaning, and spiritual life in a technological age.',
+  people:[], tags:['philanthropy','big questions'],
+  keywords:['grants','flourishing science'],
+  projects:[
+   {id:'temp-character', name:'Character & Virtue Development', people:[],
+    desc:'A major funding portfolio on the science of character, gratitude, and purpose — the moral dimensions of flourishing in a technological age.', tags:['character','grants'], url:''},
+  ]},
+ {id:'humanity-ai', name:'Humanity AI Fund', role:'funder',
+  location:'USA (10-foundation coalition)', url:'https://www.macfound.org/press/press-releases/humanity-ai-commits-500-million-to-build-a-people-centered-future-for-ai',
+  desc:'A $500 million, five-year pooled fund from ten major foundations — including Ford, MacArthur, Mellon, Mozilla, Omidyar, Packard, and Kapor — investing in a people-centered future where AI strengthens communities and human creativity.',
+  people:[], tags:['pooled fund','people-centered AI'],
+  keywords:['$500M','coalition','grants'],
+  projects:[
+   {id:'humai-grants', name:'People-Centered AI Grants', people:[],
+    desc:'Pooled grantmaking across security, democracy, education, labor, and creativity to keep AI accountable to people.', tags:['grants','coalition'], url:''},
+  ]},
+ {id:'human-change', name:'Human Change Foundation', role:'funder',
+  location:'Global', url:'https://humanstatement.org',
+  desc:'Philanthropy founded by Margarita Louis-Dreyfus supporting pro-human technology — including the Pro-Human AI Declaration and research on how digital technology shapes children’s mental health and wellbeing.',
+  people:['Margarita Louis-Dreyfus'], tags:['pro-human AI','children'],
+  keywords:['mental health','declaration'],
+  projects:[
+   {id:'hc-declaration', name:'Pro-Human AI Declaration', people:[],
+    desc:'A public declaration and campaign calling for AI that strengthens — rather than replaces — human capabilities and relationships.', tags:['declaration','advocacy'], url:'https://humanstatement.org'},
+  ]},
+ {id:'gates', name:'Gates Foundation', role:'funder',
+  location:'Seattle, WA, USA', url:'https://www.gatesfoundation.org/ideas/science-innovation-technology/artificial-intelligence',
+  desc:'The world’s largest private foundation, directing AI toward equity — funding AI scaling hubs and locally led evaluations of AI tools for health, agriculture, and education in low- and middle-income countries.',
+  people:[], tags:['global health','AI for equity'],
+  keywords:['global development','evaluation'],
+  projects:[
+   {id:'gates-health', name:'AI for Global Health', people:[],
+    desc:'Funding AI tools — from diagnostic aids to AI health workers — evaluated for real outcomes in low- and middle-income countries.', tags:['global health','evaluation'], url:''},
+  ]},
+ {id:'workday-fdn', name:'Workday Foundation', role:'funder',
+  location:'Pleasanton, CA, USA', url:'https://www.workday.com/en-us/company/foundation.html',
+  desc:'Workday’s corporate philanthropy, focused on human thriving through work — funding career pathways and workforce resilience as AI transforms the labor market.',
+  people:[], tags:['future of work','workforce'],
+  keywords:['career opportunity','skills'],
+  projects:[
+   {id:'wf-onramps', name:'Opportunity Onramps', people:[],
+    desc:'Funding skills-based pathways into meaningful careers as AI reshapes the workforce.', tags:['workforce','opportunity'], url:''},
+  ]},
+ {id:'mcgovern', name:'Patrick J. McGovern Foundation', role:'funder',
+  location:'Boston, MA, USA', url:'https://www.mcgovern.org',
+  desc:'A philanthropy bridging AI and social purpose, committing $73.5 million toward "AI for Humanity" — advancing AI that expands human potential and civic wellbeing.',
+  people:['Vilas Dhar'], tags:['AI for humanity','data philanthropy'],
+  keywords:['grants','social purpose'],
+  projects:[
+   {id:'mcg-ai4h', name:'AI for Humanity Grants', people:['Vilas Dhar'],
+    desc:'$73.5M in grants and data-science capacity for nonprofits using AI to expand human potential and civic wellbeing.', tags:['grants','data philanthropy'], url:''},
+  ]},
+ {id:'hopelab', name:'Hopelab', role:'funder',
+  location:'San Francisco, CA, USA', url:'https://hopelab.org',
+  desc:'A social innovation lab and impact investor advancing technology for adolescent mental health and wellbeing — backing research and ventures at the intersection of AI and young people’s thriving.',
+  people:[], tags:['youth mental health','impact investing'],
+  keywords:['adolescents','digital health'],
+  projects:[
+   {id:'hl-innovation', name:'Adolescent Mental Health Innovation', people:[],
+    desc:'Backing research and ventures that use technology to support — not undermine — young people’s mental health and identity.', tags:['youth','digital health'], url:''},
+  ]},
+
+ /* ---- policy ---- */
+ {id:'oecd', name:'OECD · AI Policy Observatory', role:'policy',
+  location:'Paris, France', url:'https://oecd.ai',
+  desc:'The intergovernmental hub tracking national AI policies, paired with the OECD’s long-standing work measuring what matters for people’s wellbeing ("How’s Life?").',
+  people:[], tags:['intergovernmental','policy'],
+  keywords:['AI principles','wellbeing metrics'],
+  projects:[
+   {id:'oecd-obs', name:'OECD.AI Policy Observatory', people:[],
+    desc:'A live database of AI policies and trustworthy-AI metrics across 70+ countries.', tags:['policy','database'], url:''},
+  ]},
+ {id:'ada', name:'Ada Lovelace Institute', role:'policy',
+  location:'London, UK', url:'https://www.adalovelaceinstitute.org',
+  desc:'An independent institute making data and AI work for people and society — known for rigorous research on public attitudes, regulation, and the real-world impacts of AI systems.',
+  people:[], tags:['independent research','regulation'],
+  keywords:['public attitudes','accountability'],
+  projects:[
+   {id:'ada-attitudes', name:'Public Attitudes to AI', people:[],
+    desc:'Nationally representative research on how people actually feel about AI in their lives — a counterweight to industry narratives.', tags:['public opinion','survey'], url:''},
+  ]},
+
+ /* ---- community ---- */
+ {id:'thrive', name:'Thrive Global', role:'community',
+  location:'New York, NY, USA', url:'https://thriveglobal.com',
+  desc:'Arianna Huffington’s behavior-change company, extending into AI health coaching — and a vocal advocate for AI as a "GPS for the soul" at the AHA Symposium.',
+  people:['Arianna Huffington'], tags:['behavior change','wellbeing'],
+  keywords:['habits','health coaching'],
+  projects:[
+   {id:'thrive-ai', name:'Thrive AI Health', people:[],
+    desc:'An OpenAI-backed venture building a hyper-personalized AI health coach for daily behavior change.', tags:['health','coaching'], url:''},
+  ]},
+ {id:'gatherverse', name:'GatherVerse', role:'community',
+  location:'Global / Remote', url:'https://gatherverse.org/ai4hf/',
+  desc:'A community organization convening global summits on emerging technology and humanity — including its AI for Human Flourishing summit series.',
+  people:[], tags:['summits','community'],
+  keywords:['convening','emerging tech'],
+  projects:[]},
+ {id:'wwm', name:'World Wellbeing Movement', role:'community',
+  location:'Oxford, UK', url:'https://worldwellbeingmovement.org',
+  desc:'A coalition of business and policy leaders — incubated at Oxford’s Wellbeing Research Centre — working to put wellbeing metrics at the heart of business and government decision-making.',
+  people:[], tags:['coalition','wellbeing metrics'],
+  keywords:['business','policy','measurement'],
+  projects:[
+   {id:'wwm-toolkit', name:'Workplace Wellbeing Toolkit', people:[],
+    desc:'Practical, evidence-based tools helping employers measure and improve wellbeing as AI reshapes work.', tags:['workplace','measurement'], url:''},
+  ]},
+
+ /* ---- additional nonprofits & foundations ---- */
+ {id:'digital-thriving', name:'Center for Digital Thriving · Harvard GSE', role:'academic',
+  location:'Cambridge, MA, USA', url:'https://digitalthriving.gse.harvard.edu',
+  desc:'A research and innovation center at the Harvard Graduate School of Education studying how young people can thrive in a tech-filled world — including youth-centered research on how teens actually use and imagine AI.',
+  people:['Carrie James','Emily Weinstein'], tags:['youth','digital thriving'],
+  keywords:['teens','education','wellbeing'],
+  projects:[
+   {id:'dt-imagine', name:'Imagine AI', people:[],
+    desc:'A portfolio of youth-centered research and design work on how teens experience and imagine AI in their lives.', tags:['youth voice','co-design'], url:'https://digitalthriving.gse.harvard.edu/imagine-ai-portfolio/'},
+  ]},
+ {id:'schmidt', name:'Schmidt Sciences · AI2050', role:'funder',
+  location:'New York, NY, USA', url:'https://ai2050.schmidtsciences.org',
+  desc:'A $125 million philanthropic initiative co-chaired by Eric Schmidt and James Manyika, funding exceptional researchers working on the hard problems that must go right for society to benefit from AI.',
+  people:['Eric Schmidt','James Manyika'], tags:['fellowships','hard problems'],
+  keywords:['AI2050 fellows','research funding'],
+  projects:[
+   {id:'ai2050-fellows', name:'AI2050 Fellows', people:[],
+    desc:'Multi-year fellowships for researchers tackling AI’s hard problems — from alignment to its effects on people and society.', tags:['fellowship','research'], url:''},
+  ]},
+ {id:'ford', name:'Ford Foundation', role:'funder',
+  location:'New York, NY, USA', url:'https://www.fordfoundation.org',
+  desc:'One of the largest social-justice philanthropies, funding technology in the public interest — and a member of the Humanity AI coalition for people-centered AI.',
+  people:[], tags:['social justice','public interest tech'],
+  keywords:['equity','civil society'],
+  projects:[
+   {id:'ford-pit', name:'Public Interest Technology', people:[],
+    desc:'Building a field — and a university network — of technologists working in the public interest.', tags:['field-building','equity'], url:''},
+  ]},
+ {id:'macarthur', name:'MacArthur Foundation', role:'funder',
+  location:'Chicago, IL, USA', url:'https://www.macfound.org',
+  desc:'Major philanthropy supporting a more just and verdant world — a driving member of the $500M Humanity AI coalition investing in a people-driven future for AI.',
+  people:[], tags:['philanthropy','technology in the public interest'],
+  keywords:['grants','coalition'],
+  projects:[
+   {id:'mac-tech-pi', name:'Technology in the Public Interest', people:[],
+    desc:'Grantmaking to ensure AI and digital systems are accountable, just, and oriented to the common good.', tags:['public interest','grants'], url:''},
+  ]},
+ {id:'omidyar', name:'Omidyar Network', role:'funder',
+  location:'Redwood City, CA, USA', url:'https://omidyar.com',
+  desc:'Pierre Omidyar’s philanthropic investment firm, funding responsible technology — from digital wellbeing to AI governance — and a Humanity AI coalition member.',
+  people:[], tags:['responsible tech','impact investing'],
+  keywords:['digital society','governance'],
+  projects:[
+   {id:'omi-resptech', name:'Responsible Technology', people:[],
+    desc:'Investing in a digital society where technology strengthens agency, trust, and democratic life.', tags:['responsible tech','agency'], url:''},
+  ]},
+ {id:'knight', name:'Knight Foundation', role:'funder',
+  location:'Miami, FL, USA', url:'https://knightfoundation.org',
+  desc:'Funds informed and engaged communities — including major university investments in research on technology, AI, and the future of democracy.',
+  people:[], tags:['democracy','journalism'],
+  keywords:['informed communities','research funding'],
+  projects:[
+   {id:'knight-democracy', name:'AI, Democracy & Local News', people:[],
+    desc:'Funding research and institutions so AI strengthens — rather than corrodes — informed, engaged communities.', tags:['democracy','journalism'], url:''},
+  ]},
+ {id:'wellcome', name:'Wellcome Trust', role:'funder',
+  location:'London, UK', url:'https://wellcome.org',
+  desc:'One of the world’s largest health foundations, funding research on mental health and digital technology — including locally led evaluations of AI health tools with the Gates Foundation.',
+  people:[], tags:['global health','mental health'],
+  keywords:['science funding','digital mental health'],
+  projects:[
+   {id:'well-mh', name:'Mental Health Priority Area', people:[],
+    desc:'A major research program on what works for anxiety and depression — including the role of digital and AI tools.', tags:['mental health','research'], url:''},
+  ]},
+ {id:'jed', name:'The Jed Foundation', role:'civil',
+  location:'New York, NY, USA', url:'https://jedfoundation.org',
+  desc:'A leading nonprofit protecting emotional health and preventing suicide among teens and young adults — increasingly focused on how AI and social platforms shape youth mental health.',
+  people:[], tags:['youth mental health','prevention'],
+  keywords:['suicide prevention','schools'],
+  projects:[
+   {id:'jed-standards', name:'Youth AI & Mental Health Guidance', people:[],
+    desc:'Guidance for platforms and AI companies on protecting the emotional health of teens and young adults.', tags:['guidance','youth'], url:''},
+  ]},
+ {id:'5rights', name:'5Rights Foundation', role:'civil',
+  location:'London, UK', url:'https://5rightsfoundation.com',
+  desc:'Works to build the digital world children deserve — behind age-appropriate design codes worldwide and advocacy for children’s rights in AI systems.',
+  people:['Beeban Kidron'], tags:['children’s rights','design codes'],
+  keywords:['age-appropriate design','regulation'],
+  projects:[
+   {id:'5r-aicode', name:'Children & AI Design Code', people:[],
+    desc:'A protocol for building AI systems that are safe for — and accountable to — children by design.', tags:['design code','children'], url:''},
+  ]},
+ {id:'humane-intel', name:'Humane Intelligence', role:'civil',
+  location:'New York, NY, USA', url:'https://www.humane-intelligence.org',
+  desc:'A tech nonprofit led by Rumman Chowdhury building public-interest evaluation of AI — red-teaming and algorithmic assessments in service of society.',
+  people:['Rumman Chowdhury'], tags:['evaluation','red-teaming'],
+  keywords:['algorithmic assessment','public interest'],
+  projects:[
+   {id:'hi-bounties', name:'Algorithmic Bias Bounties', people:['Rumman Chowdhury'],
+    desc:'Public red-teaming challenges that surface bias and harm in AI systems — bringing community expertise into evaluation.', tags:['red-teaming','bias'], url:''},
+  ]},
+ {id:'encode', name:'Encode', role:'civil',
+  location:'Washington, DC, USA', url:'https://encodeai.org',
+  desc:'A youth-led movement advocating for safe and accountable AI — organizing young people into the policy conversations that will define their future.',
+  people:[], tags:['youth-led','advocacy'],
+  keywords:['AI policy','organizing'],
+  projects:[
+   {id:'enc-advocacy', name:'Youth AI Advocacy', people:[],
+    desc:'Organizing young people into the AI policy process — from legislative testimony to grassroots campaigns.', tags:['youth','policy'], url:''},
+  ]},
+ {id:'future-society', name:'The Future Society', role:'policy',
+  location:'Boston, MA, USA', url:'https://thefuturesociety.org',
+  desc:'An independent nonprofit advancing the responsible governance of AI — operationalizing principles into institutions, law, and practice worldwide.',
+  people:[], tags:['AI governance','institutions'],
+  keywords:['operationalizing ethics','international'],
+  projects:[
+   {id:'tfs-gov', name:'Global AI Governance', people:[],
+    desc:'Turning high-level AI principles into concrete institutions, standards, and law across jurisdictions.', tags:['governance','institutions'], url:''},
+  ]},
+ {id:'aspen-digital', name:'Aspen Institute · Aspen Digital', role:'community',
+  location:'Washington, DC, USA', url:'https://www.aspendigital.org',
+  desc:'The Aspen Institute’s technology program, convening leaders across sectors so that AI and the information ecosystem serve a healthy, connected society.',
+  people:['Vivian Schiller'], tags:['convening','information ecosystem'],
+  keywords:['leadership','AI & society'],
+  projects:[
+   {id:'asp-elections', name:'AI Elections Initiative', people:[],
+    desc:'Convening industry and civil society to protect information integrity and democratic trust in the age of generative AI.', tags:['democracy','information integrity'], url:''},
+  ]},
+
+ /* ---- global initiatives & government ---- */
+ {id:'noesis', name:'Noēsis Collaborative', role:'community',
+  location:'San Francisco, CA, USA', url:'https://www.noesiscollaborative.org',
+  desc:'A nonprofit building a collaborative ecosystem of leaders who research, build, and govern technology that advances human flourishing — through invitation-only salons, the Noēsis Institute, and HumanConnections.AI.',
+  people:[], tags:['flourishing','salons','ecosystem building'],
+  keywords:['noētechnoi','social AI','human connection'],
+  projects:[
+   {id:'noesis-hcai', name:'HumanConnections.AI', people:[],
+    desc:'Salons convening leaders from tech, academia, venture, and civil society on AI that strengthens social relationships — including a Social AI white paper with Harvard’s Human Flourishing Program.', tags:['salon','social AI'], url:''},
+  ]},
+ {id:'current-ai', name:'Current AI', role:'funder',
+  location:'Paris, France', url:'https://www.currentai.org',
+  desc:'A public-interest AI partnership launched at the 2025 Paris AI Action Summit with an initial $400 million — from France, Germany, Ford, MacArthur, Google DeepMind, Salesforce and others — funding open, accountable AI that serves global equity.',
+  people:[], tags:['public interest AI','open infrastructure'],
+  keywords:['$2.5B goal','data commons','Paris Summit'],
+  projects:[
+   {id:'cai-commons', name:'Public Interest AI Commons', people:[],
+    desc:'Open datasets, tools, and infrastructure so public-interest developers can build AI that serves global equity.', tags:['open infrastructure','data commons'], url:''},
+  ]},
+ {id:'tech-justice', name:'Tech Justice Law Project', role:'civil',
+  location:'Washington, DC, USA', url:'https://techjusticelaw.org',
+  desc:'A legal advocacy organization holding technology companies accountable for AI and platform harms — litigating landmark cases on behalf of families harmed by AI companions.',
+  people:['Meetali Jain'], tags:['litigation','accountability'],
+  keywords:['AI harms','consumer protection'],
+  projects:[
+   {id:'tj-litigation', name:'AI Accountability Litigation', people:['Meetali Jain'],
+    desc:'Landmark cases holding AI companies responsible for harms to users — including families affected by AI companion products.', tags:['litigation','accountability'], url:''},
+  ]},
+ {id:'dubai-future', name:'Dubai Future Foundation', role:'policy',
+  location:'Dubai, UAE', url:'https://www.dubaifuture.ae',
+  desc:'Dubai’s government foundation for imagining and prototyping the future — host of the Dubai Future Forum, one of the world’s largest gatherings of futurists, with growing programs on AI and human potential.',
+  people:[], tags:['futures','government innovation'],
+  keywords:['Dubai Future Forum','foresight'],
+  projects:[
+   {id:'dff-forum', name:'Dubai Future Forum', people:[],
+    desc:'An annual global gathering of futurists exploring how emerging technology — AI foremost — should shape human futures.', tags:['convening','foresight'], url:''},
+  ]},
+ {id:'govtech-sg', name:'GovTech Singapore', role:'policy',
+  location:'Singapore', url:'https://www.tech.gov.sg',
+  desc:'Singapore’s government technology agency, building citizen-centered digital services and applying AI for public good across the Smart Nation initiative.',
+  people:[], tags:['digital government','Smart Nation'],
+  keywords:['public services','AI for public good'],
+  projects:[
+   {id:'gt-pair', name:'Pair — Government AI Assistant', people:[],
+    desc:'A whole-of-government AI assistant helping public servants work better, built with citizen trust and safety in mind.', tags:['digital government','assistant'], url:''},
+  ]},
+ {id:'unesco', name:'UNESCO', role:'policy',
+  location:'Paris, France', url:'https://www.unesco.org/en/artificial-intelligence',
+  desc:'The UN agency behind the first global standard on AI ethics — the Recommendation on the Ethics of AI, adopted by 194 member states with human dignity and flourishing at its core.',
+  people:[], tags:['global standards','AI ethics'],
+  keywords:['recommendation','member states'],
+  projects:[
+   {id:'unesco-rec', name:'Recommendation on the Ethics of AI', people:[],
+    desc:'The first global normative framework for AI ethics, centering human rights, dignity, and environmental flourishing.', tags:['norms','global'], url:''},
+  ]},
+ {id:'eu-ai-office', name:'European AI Office', role:'policy',
+  location:'Brussels, Belgium', url:'https://digital-strategy.ec.europa.eu/en/policies/ai-office',
+  desc:'The European Commission body implementing the EU AI Act — the world’s first comprehensive AI law — to ensure AI in Europe is trustworthy and human-centric.',
+  people:[], tags:['regulation','EU AI Act'],
+  keywords:['trustworthy AI','enforcement'],
+  projects:[
+   {id:'eu-ai-act', name:'EU AI Act Implementation', people:[],
+    desc:'Risk-based rules for AI systems across the EU, including protections for fundamental rights and wellbeing.', tags:['law','fundamental rights'], url:''},
+  ]},
+ {id:'mit-raise', name:'MIT RAISE', role:'academic',
+  location:'Cambridge, MA, USA', url:'https://raise.mit.edu',
+  desc:'MIT’s Responsible AI for Social Empowerment and Education initiative — headquartered at the MIT Media Lab and led by Cynthia Breazeal — advancing AI literacy so everyone can flourish in an AI-shaped world.',
+  people:['Cynthia Breazeal'], tags:['AI literacy','education'],
+  keywords:['K-12','empowerment'],
+  projects:[
+   {id:'raise-dayofai', name:'Day of AI', people:['Cynthia Breazeal'],
+    desc:'A free global AI-literacy curriculum reaching students in over 100 countries.', tags:['curriculum','global'], url:'https://dayofai.org'},
+  ]},
+ {id:'artist-machine', name:'Artist and the Machine', role:'community',
+  location:'Los Angeles / New York, USA', url:'https://artistandthemachine.com',
+  desc:'A bi-annual convening of decision-makers at the intersection of creativity and AI — exploring how AI reshapes meaning, authorship, and human expression.',
+  people:['Dani Van de Sande'], tags:['creativity','summits'],
+  keywords:['art','culture','human expression'],
+  projects:[
+   {id:'am-summit', name:'AI & Creativity Summit', people:[],
+    desc:'Summits gathering hundreds of cross-disciplinary leaders — artists, studios, and AI builders — on creativity, culture, and human connection.', tags:['convening','creativity'], url:''},
+  ]},
+ {id:'wef', name:'World Economic Forum · AI Governance Alliance', role:'community',
+  location:'Geneva, Switzerland', url:'https://initiatives.weforum.org/ai-governance-alliance/home',
+  desc:'A multistakeholder alliance of industry, government, and civil society convened by the World Economic Forum to steer responsible AI development and inclusive access worldwide.',
+  people:[], tags:['multistakeholder','global governance'],
+  keywords:['responsible AI','inclusive access'],
+  projects:[
+   {id:'wef-c4ir', name:'Centre for the Fourth Industrial Revolution', people:[],
+    desc:'A global network piloting governance approaches so emerging technologies benefit people and the planet.', tags:['governance','global network'], url:''},
+  ]},
+], links:[
+ {a:'aha', b:'openai',      label:'Joint RCT on chatbot wellbeing'},
+ {a:'aha', b:'cht',         label:'AHA Symposium dialogue'},
+ {a:'aha', b:'thrive',      label:'AHA Symposium dialogue'},
+ {a:'aha', b:'harvard-hfp', label:'Flourishing science exchange'},
+ {a:'aha', b:'bkc',         label:'Ethics & Governance of AI Initiative'},
+ {a:'harvard-hfp', b:'baylor-isr', label:'Global Flourishing Study co-leads'},
+ {a:'harvard-hfp', b:'gallup',     label:'GFS data collection'},
+ {a:'harvard-hfp', b:'cos',        label:'GFS open data'},
+ {a:'harvard-hfp', b:'templeton',  label:'GFS funding'},
+ {a:'baylor-isr', b:'templeton',   label:'GFS funding'},
+ {a:'gloo', b:'harvard-hfp',       label:'Benchmark uses flourishing dimensions'},
+ {a:'oxford-wrc', b:'gallup',      label:'World Happiness Report data'},
+ {a:'oxford-wrc', b:'wwm',         label:'Incubated the movement'},
+ {a:'thrive', b:'openai',          label:'Thrive AI Health venture'},
+ {a:'stanford-hai', b:'oecd',      label:'Shared AI metrics'},
+ {a:'pai', b:'openai',             label:'Partner network'},
+ {a:'pai', b:'deepmind',           label:'Partner network'},
+ {a:'pai', b:'msr',                label:'Partner network'},
+ {a:'msr', b:'openai',             label:'Strategic partnership'},
+ {a:'ath', b:'cht',                label:'Responsible tech community'},
+ {a:'commonsense', b:'anthropic',  label:'Youth AI Safety Institute support'},
+ {a:'commonsense', b:'openai',     label:'Youth AI Safety Institute support'},
+ {a:'commonsense', b:'hopelab',    label:'Joint youth wellbeing research'},
+ {a:'mozilla', b:'humanity-ai',    label:'Humanity AI coalition member'},
+ {a:'ford', b:'humanity-ai',       label:'Humanity AI coalition member'},
+ {a:'macarthur', b:'humanity-ai',  label:'Humanity AI coalition member'},
+ {a:'omidyar', b:'humanity-ai',    label:'Humanity AI coalition member'},
+ {a:'wellcome', b:'gates',         label:'Joint AI health evaluations'},
+ {a:'commonsense', b:'humane-intel', label:'Youth AI safety evaluation partner'},
+ {a:'noesis', b:'harvard-hfp',      label:'Social AI white paper'},
+ {a:'current-ai', b:'ford',         label:'Founding partner'},
+ {a:'current-ai', b:'macarthur',    label:'Founding partner'},
+ {a:'current-ai', b:'deepmind',     label:'Founding partner'},
+ {a:'aha', b:'psychtech',           label:'Open Benchmark for the Human Impact of AI'},
+ {a:'aha', b:'anthropic',           label:'Research collaboration'},
+ {a:'aha', b:'commonsense',         label:'Youth & AI collaboration'},
+ {a:'aha', b:'omidyar',             label:'Program support'},
+ {a:'aha', b:'human-change',        label:'Program support'},
+ {a:'aha', b:'mit-raise',           label:'MIT Media Lab initiatives'},
+ {a:'turing', b:'ada',              label:'UK AI research ecosystem'},
+ {a:'ai-now', b:'data-society',     label:'NYC critical AI research'},
+ {a:'mozilla', b:'cht',             label:'Humane & trustworthy tech'},
+ {a:'stanford-hai', b:'gallup',     label:'AI Index survey data'},
+ {a:'noesis', b:'psychtech',        label:'Flourishing research network'},
+ {a:'current-ai', b:'mozilla',      label:'Public-interest AI'},
+ {a:'unesco', b:'oecd',             label:'Global AI governance'},
+ {a:'wef', b:'pai',                 label:'Multistakeholder governance'},
+]};
+
+/* ---- flourishing-area assignments (org id → areas of the outer ring) ---- */
+const AREA_MAP={
+ aha:['agency','wellbeing','social'], 'harvard-hfp':['purpose','wellbeing','social'],
+ 'stanford-hai':['agency','learning'], 'oxford-wrc':['wellbeing','purpose'],
+ oii:['wellbeing','learning'], 'oxford-ethics':['agency','purpose'], cfi:['agency','learning'],
+ chai:['agency'], bkc:['agency','learning'], citp:['agency','learning'],
+ 'yale-dec':['agency','purpose'], 'upenn-ppc':['purpose','wellbeing'],
+ 'cmu-hcii':['learning','agency'], turing:['wellbeing','agency'],
+ 'uva-csc':['purpose','wellbeing'], 'baylor-isr':['purpose','social'],
+ 'digital-thriving':['learning','wellbeing','social'], 'mit-raise':['learning','creativity'],
+ anthropic:['agency','wellbeing'], openai:['wellbeing','social','agency'],
+ deepmind:['agency','social'], msr:['agency','learning'], ai2:['learning','agency'],
+ jigsaw:['social','agency'],
+ cht:['agency','wellbeing','social'], ath:['purpose','social'], pai:['agency','social'],
+ psychtech:['wellbeing','agency','social'], commonsense:['learning','wellbeing','social'],
+ 'data-society':['agency','social'], 'ai-now':['agency'], mozilla:['agency','learning'],
+ jed:['wellbeing','social'], '5rights':['wellbeing','agency'], 'humane-intel':['agency'],
+ encode:['agency','purpose'], 'tech-justice':['agency','wellbeing'],
+ gloo:['purpose','wellbeing','social'], gallup:['wellbeing','purpose'],
+ cos:['learning','agency'], 'positive-ai':['wellbeing','purpose','agency'],
+ templeton:['purpose','social'], 'humanity-ai':['creativity','agency','social'],
+ 'human-change':['wellbeing','social'], gates:['wellbeing','learning'],
+ 'workday-fdn':['purpose','learning'], mcgovern:['agency','wellbeing'],
+ hopelab:['wellbeing','social'], schmidt:['agency','learning'],
+ ford:['agency','social'], macarthur:['agency','social'], omidyar:['agency','social'],
+ knight:['learning','social'], wellcome:['wellbeing'], 'current-ai':['agency','learning'],
+ oecd:['wellbeing','agency'], ada:['agency'], 'eu-ai-office':['agency','wellbeing'],
+ 'dubai-future':['learning','purpose'], 'govtech-sg':['agency','wellbeing'],
+ unesco:['agency','learning'], wef:['agency','social'],
+ thrive:['wellbeing','purpose'], gatherverse:['social','purpose'],
+ wwm:['wellbeing','purpose'], noesis:['purpose','social','wellbeing'],
+ 'aspen-digital':['agency','social'], 'artist-machine':['creativity','purpose'],
+};
+/* project-level overrides: explicit areas + multi-org collaborations */
+const PROJ_META={
+ 'aha-futureyou':{areas:['purpose','wellbeing']},
+ 'aha-chatbot-wb':{areas:['wellbeing','social'],collab:['openai']},
+ 'aha-memory':{areas:['agency']},
+ 'aha-bfai':{areas:['social']},
+ 'aha-elders':{areas:['social','wellbeing']},
+ 'aha-atlas':{areas:['agency','learning']},
+ 'aha-bench':{areas:['wellbeing','agency']},
+ 'aha-openbench':{collab:['psychtech']},
+ 'openai-affective':{collab:['aha']},
+ 'bkc-ai':{collab:['aha']},
+ 'hfp-gfs':{collab:['baylor-isr','gallup','cos','templeton']},
+ 'noesis-hcai':{collab:['harvard-hfp']},
+ 'wrc-whr':{collab:['gallup'],url:'https://worldhappiness.report'},
+ 'thrive-ai':{collab:['openai']},
+ 'cs-yasi':{collab:['humane-intel']},
+ 'dm-habermas':{areas:['social','agency']},
+ 'am-summit':{areas:['creativity']},
+ 'raise-dayofai':{areas:['learning','creativity']},
+ 'jig-perspective':{areas:['social']},
+ 'cos-osf':{url:'https://osf.io'},
+};
+SEED.orgs.forEach(o=>{
+  o.areas=AREA_MAP[o.id]||[];
+  o.projects.forEach(p=>{const m=PROJ_META[p.id];if(m)Object.assign(p,m);});
+});
+
+/* ============================== state ============================== */
+const STORE_KEY='ahf-atlas-v7';
+function loadData(){ try{const s=localStorage.getItem(STORE_KEY); if(s) return JSON.parse(s);}catch(e){} return JSON.parse(JSON.stringify(SEED)); }
+function persist(){ try{localStorage.setItem(STORE_KEY,JSON.stringify(data));}catch(e){} }
+let data = loadData();
+
+let editMode=false, selected=null, hovered=null, query='', showProjects=true;
+let showRing=true, selectedArea=null, hoveredArea=null, userMoved=false;
+const RING_R=760, RING_W=26;
+const roleOn = Object.fromEntries(Object.keys(ROLES).map(r=>[r,true]));
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- theme ---------- */
+function themeName(){
+  const dt=document.documentElement.dataset.theme;
+  if(dt==='dark'||dt==='light') return dt;
+  return matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+}
+const PALETTES={
+  light:{bg:'#F7F9FA',dots:'#E9EFF0',edge:'#93A9AF',edgeSoft:'#BDCBCE',link:'#0D9488',
+         ink:'#13272E',muted:'#63797F',labelBg:'rgba(247,249,250,.86)',ring:'#FFFFFF'},
+  dark:{bg:'#0B1214',dots:'#162226',edge:'#52686E',edgeSoft:'#34464C',link:'#2DD4BF',
+        ink:'#E9F2F3',muted:'#8FA5AB',labelBg:'rgba(11,18,20,.86)',ring:'#0B1214'},
+};
+let THEME=themeName(), PAL=PALETTES[THEME];
+function roleColor(role){ return (ROLES[role]||ROLES.community).c[THEME]; }
+new MutationObserver(()=>{THEME=themeName();PAL=PALETTES[THEME];})
+  .observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{THEME=themeName();PAL=PALETTES[THEME];});
+
+/* ============================== graph ============================== */
+let nodes=[], edges=[], nodeById={}, adj={};
+const rand=(a,b)=>a+Math.random()*(b-a);
+
+function buildGraph(){
+  const old={}; nodes.forEach(n=>old[n.id]=n);
+  nodes=[]; edges=[]; nodeById={}; adj={};
+  const add=n=>{nodes.push(n);nodeById[n.id]=n;adj[n.id]=adj[n.id]||new Set();};
+  const connect=(a,b)=>{adj[a.id].add(b.id);adj[b.id].add(a.id);};
+
+  // central concept node
+  {
+    const prev=old['root'];
+    add({id:'root',kind:'root',ref:{
+      name:'AI × Human Flourishing',
+      desc:'The movement to understand — and deliberately design — how artificial intelligence can support human wellbeing, agency, meaning, and connection. This atlas maps the research hubs, universities, labs, nonprofits, funders, and policy bodies shaping it.'},
+      r:15, ax:0, ay:0,
+      x:prev?prev.x:0, y:prev?prev.y:0, vx:0,vy:0});
+  }
+  const rootNode=nodeById['root'];
+
+  // role anchor nodes (skip 'hub' — AHA links directly to the center)
+  const roleKeys=Object.keys(ROLES).filter(k=>k!=='hub'&&data.orgs.some(o=>orgRoles(o).includes(k)));
+  const R=470;
+  roleKeys.forEach((k,i)=>{
+    const ang=(i/roleKeys.length)*Math.PI*2 - Math.PI/2;
+    const id='role:'+k;
+    const prev=old[id];
+    add({id,kind:'role',role:k,ref:{name:ROLES[k].label,desc:ROLES[k].desc},r:19,
+      ax:Math.cos(ang)*R, ay:Math.sin(ang)*R,
+      x:prev?prev.x:Math.cos(ang)*R, y:prev?prev.y:Math.sin(ang)*R, vx:0,vy:0});
+  });
+
+  // connection counts drive node size — highly connected orgs stand out
+  const degree={};
+  data.links.forEach(l=>{degree[l.a]=(degree[l.a]||0)+1;degree[l.b]=(degree[l.b]||0)+1;});
+  data.orgs.forEach(o=>{
+    const prev=old[o.id], pr=primaryRole(o), hub=pr==='hub';
+    const deg=(degree[o.id]||0)+Math.max(0,orgRoles(o).length-1);
+    const r=(hub?16:7)+Math.min(o.projects.length*.7,4)+Math.min(deg*1.1,8);
+    const roleNode=nodeById['role:'+pr];
+    const bx=hub?60:(roleNode?roleNode.ax:0), by=hub?-60:(roleNode?roleNode.ay:0);
+    add({id:o.id,kind:'org',ref:o,r,deg,
+      x:prev?prev.x:bx*.9+rand(-120,120), y:prev?prev.y:by*.9+rand(-120,120), vx:0,vy:0});
+  });
+
+  // root ↔ role spokes, root ↔ hub org
+  roleKeys.forEach(k=>{
+    const rn=nodeById['role:'+k];
+    if(rn){edges.push({s:rootNode,t:rn,rest:R*.92,kind:'spine'});connect(rootNode,rn);}
+  });
+  const hubNode=nodeById[data.orgs.find(o=>primaryRole(o)==='hub')?.id];
+  if(hubNode){edges.push({s:rootNode,t:hubNode,rest:150,kind:'spine'});connect(rootNode,hubNode);}
+  // role ↔ org (every role an org belongs to)
+  data.orgs.forEach(o=>{
+    const n=nodeById[o.id];
+    orgRoles(o).forEach((rk,ri)=>{
+      const rn=nodeById['role:'+rk];
+      if(n&&rn){edges.push({s:rn,t:n,rest:ri>0?320:150,kind:'role',secondary:ri>0});connect(rn,n);}
+    });
+  });
+  // org ↔ project
+  data.orgs.forEach(o=>{
+    const n=nodeById[o.id];
+    o.projects.forEach((p,j)=>{
+      const prev=old[p.id];
+      const pa=Math.atan2(n.y,n.x)+(j/(o.projects.length||1))*Math.PI*2;
+      add({id:p.id,kind:'proj',ref:p,org:o,r:4,
+        x:prev?prev.x:n.x+Math.cos(pa)*(n.r+40)+rand(-6,6),
+        y:prev?prev.y:n.y+Math.sin(pa)*(n.r+40)+rand(-6,6),vx:0,vy:0});
+      edges.push({s:n,t:nodeById[p.id],rest:n.r+30+(j%3)*8,kind:'proj'});
+      connect(n,nodeById[p.id]);
+    });
+  });
+  // shared projects: extra edges to collaborating orgs
+  data.orgs.forEach(o=>{
+    o.projects.forEach(p=>{
+      (p.collab||[]).forEach(cid=>{
+        const cn=nodeById[cid], pn=nodeById[p.id];
+        if(cn&&pn&&cid!==o.id){edges.push({s:cn,t:pn,rest:cn.r+42,kind:'proj'});connect(cn,pn);}
+      });
+    });
+  });
+  // cross-org links
+  data.links.forEach(l=>{
+    const a=nodeById[l.a], b=nodeById[l.b];
+    if(!a||!b) return;
+    connect(a,b);
+    edges.push({s:a,t:b,rest:340,kind:'link',label:l.label});
+  });
+  updateStats(); renderLegend();
+}
+
+function orgRoles(o){ return (o.roles&&o.roles.length)?o.roles:(o.role?[o.role]:['academic']); }
+function primaryRole(o){ return orgRoles(o)[0]; }
+function colorOf(n){
+  if(n.kind==='root') return roleColor('hub');
+  if(n.kind==='role') return roleColor(n.role);
+  const o=n.kind==='org'?n.ref:n.org;
+  return roleColor(primaryRole(o));
+}
+function rolesOfNode(n){ return n.kind==='role'?[n.role]:(n.kind==='org'?orgRoles(n.ref):orgRoles(n.org)); }
+function nodeAreas(n){
+  if(n.kind==='org') return n.ref.areas||[];
+  if(n.kind==='proj') return (n.ref.areas&&n.ref.areas.length)?n.ref.areas:(n.org.areas||[]);
+  return [];
+}
+function arcBounds(i){
+  const gap=.05, span=Math.PI*2/AREA_KEYS.length;
+  return [-Math.PI/2+i*span+gap, -Math.PI/2+(i+1)*span-gap];
+}
+function arcHit(px,py){
+  if(!showRing) return null;
+  const wx=(px-tx)/zk, wy=(py-ty)/zk, d=Math.hypot(wx,wy);
+  if(Math.abs(d-RING_R)>RING_W) return null;
+  const th=Math.atan2(wy,wx);
+  for(let i=0;i<AREA_KEYS.length;i++){
+    const [s,e]=arcBounds(i);
+    let t=th; while(t<s) t+=Math.PI*2;
+    if(t<=e) return AREA_KEYS[i];
+  }
+  return null;
+}
+
+function matches(n){
+  if(!query) return true;
+  const q=query.toLowerCase(), r=n.ref;
+  const pool=[r.name,r.desc,(r.people||[]).join(' '),(r.tags||[]).join(' '),
+    (r.keywords||[]).join(' '), r.location||''].join(' ').toLowerCase();
+  return pool.includes(q);
+}
+function visible(n){
+  if(n.kind==='root') return true;
+  if(!rolesOfNode(n).some(r=>roleOn[r])) return false;
+  if(!query) return true;
+  if(n.kind==='role') return data.orgs.some(o=>orgRoles(o).includes(n.role)&&matches(nodeById[o.id]));
+  if(n.kind==='org') return matches(n)||n.ref.projects.some(p=>matches(nodeById[p.id]));
+  return matches(n)||matches(nodeById[n.org.id]);
+}
+
+/* ============================== physics ============================== */
+let dragNode=null;
+function step(){
+  const N=nodes.length;
+  for(let i=0;i<N;i++){const a=nodes[i];
+    for(let j=i+1;j<N;j++){const b=nodes[j];
+      let dx=b.x-a.x,dy=b.y-a.y,d2=dx*dx+dy*dy;
+      if(d2<1){dx=rand(-1,1);dy=rand(-1,1);d2=1;}
+      if(d2>300000)continue;
+      const d=Math.sqrt(d2), rep=210*(a.r+b.r)/d2, fx=dx/d*rep, fy=dy/d*rep;
+      a.vx-=fx;a.vy-=fy;b.vx+=fx;b.vy+=fy;
+    }}
+  for(const e of edges){
+    let dx=e.t.x-e.s.x,dy=e.t.y-e.s.y;
+    const d=Math.sqrt(dx*dx+dy*dy)||1;
+    const k=e.kind==='proj'?0.05:e.kind==='role'?(e.secondary?0.006:0.025):e.kind==='spine'?0.02:0.004;
+    const f=(d-e.rest)*k, fx=dx/d*f*.5, fy=dy/d*f*.5;
+    e.s.vx+=fx;e.s.vy+=fy;e.t.vx-=fx;e.t.vy-=fy;
+  }
+  for(const n of nodes){
+    if(n.kind==='root'){ n.vx+=(n.ax-n.x)*0.09; n.vy+=(n.ay-n.y)*0.09; }
+    else if(n.kind==='role'){ n.vx+=(n.ax-n.x)*0.05; n.vy+=(n.ay-n.y)*0.05; }
+    else if(n.kind==='org'){
+      const g=n.ref.role==='hub'?0.008:0.0016;
+      n.vx-=n.x*g; n.vy-=n.y*g;
+    } else { n.vx-=n.x*0.0004; n.vy-=n.y*0.0004; }
+    if(showRing&&n.kind!=='root'){
+      const d=Math.hypot(n.x,n.y);
+      if(d>RING_R-90){const f=(d-(RING_R-90))*0.004;n.vx-=n.x/d*f;n.vy-=n.y/d*f;}
+    }
+    if(n===dragNode){n.vx=0;n.vy=0;continue;}
+    n.vx*=0.84;n.vy*=0.84;n.x+=n.vx;n.y+=n.vy;
+  }
+}
+
+/* ============================== render ============================== */
+const cv=document.getElementById('net'), ctx=cv.getContext('2d');
+let W=0,H=0,dpr=1,tx=0,ty=0,zk=1;
+function resize(){
+  dpr=Math.min(devicePixelRatio||1,2);
+  const oW=W,oH=H;
+  W=innerWidth;H=innerHeight;
+  cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';
+  if(oW){ if(showRing&&!userMoved)fitRing(); else {tx+=(W-oW)/2;ty+=(H-oH)/2;} }
+}
+addEventListener('resize',resize); resize();
+tx=W/2; ty=H/2; zk=Math.max(.42,Math.min(1,Math.min(W,H)/1280));
+function fitRing(){zk=Math.max(.24,Math.min(.9,Math.min(W,H)/(2*(RING_R+170))));tx=W/2;ty=H/2;}
+if(showRing)fitRing();
+
+function hexA(hex,a){
+  const n=parseInt(hex.slice(1),16);
+  return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;
+}
+function curve(ax,ay,bx,by,bend){
+  const mx=(ax+bx)/2, my=(ay+by)/2;
+  const dx=bx-ax, dy=by-ay, d=Math.sqrt(dx*dx+dy*dy)||1;
+  const ox=-dy/d*d*bend, oy=dx/d*d*bend;
+  ctx.beginPath();ctx.moveTo(ax,ay);ctx.quadraticCurveTo(mx+ox,my+oy,bx,by);ctx.stroke();
+}
+const SANS='-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif';
+const iconCache={};
+function drawIconScreen(d,cx,cy,size,color,alpha){
+  let p=iconCache[d]; if(!p){p=new Path2D(d);iconCache[d]=p;}
+  const s=size/24;
+  ctx.save();
+  ctx.globalAlpha=alpha;
+  ctx.translate(cx,cy);ctx.scale(s,s);ctx.translate(-12,-12);
+  ctx.strokeStyle=color;ctx.lineWidth=1.7/s;
+  ctx.lineJoin='round';ctx.lineCap='round';
+  ctx.stroke(p);
+  ctx.restore();
+}
+
+function draw(){
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle=PAL.bg;ctx.fillRect(0,0,W,H);
+  // subtle dot grid
+  const gs=26*zk<12?52*zk:26*zk;
+  ctx.fillStyle=PAL.dots;
+  const ox=tx%gs, oy=ty%gs;
+  for(let x=ox;x<W;x+=gs)for(let y=oy;y<H;y+=gs){ctx.fillRect(x,y,1.5,1.5);}
+
+  const focus=hovered||selected;
+  const inFocus=id=>focus&&(id===focus.id||adj[focus.id]?.has(id));
+  ctx.setTransform(dpr*zk,0,0,dpr*zk,dpr*tx,dpr*ty);
+  ctx.lineCap='round';
+
+  // flourishing ring: six arc segments + node→area threads
+  if(showRing){
+    ctx.lineCap='butt';
+    for(let i=0;i<AREA_KEYS.length;i++){
+      const k=AREA_KEYS[i], [s,e]=arcBounds(i), col=AREAS[k].color;
+      const active=selectedArea===k||hoveredArea===k;
+      ctx.beginPath();ctx.arc(0,0,RING_R,s,e);
+      ctx.strokeStyle=hexA(col,active?.6:(selectedArea?.13:.25));
+      ctx.lineWidth=active?RING_W+8:RING_W;
+      ctx.stroke();
+    }
+    ctx.lineCap='round';
+    for(const n of nodes){
+      if(n.kind!=='org'&&n.kind!=='proj')continue;
+      if(n.kind==='proj'&&!showProjects)continue;
+      const list=nodeAreas(n); if(!list.length)continue;
+      const isOrgN=n.kind==='org';
+      for(const k of list){
+        const i=AREA_KEYS.indexOf(k); if(i<0)continue;
+        const [s,e]=arcBounds(i), col=AREAS[k].color;
+        let th=Math.atan2(n.y,n.x); while(th<s)th+=Math.PI*2;
+        const t=Math.min(Math.max(th,s+.05),e-.05);
+        const ax=Math.cos(t)*(RING_R-RING_W/2-2), ay=Math.sin(t)*(RING_R-RING_W/2-2);
+        let a=isOrgN?.16:.09, w=isOrgN?.9:.6;
+        if(selectedArea===k){a=isOrgN?.5:.32;w=isOrgN?1.2:.9;}
+        else if(selectedArea)a=.02;
+        if(focus&&focus.id===n.id){a=.85;w=1.6;}
+        else if(focus&&!inFocus(n.id))a=Math.min(a,.03);
+        ctx.strokeStyle=hexA(col,a);ctx.lineWidth=w/zk;
+        curve(n.x,n.y,ax,ay,.05);
+      }
+    }
+  }
+
+  // edges
+  for(const e of edges){
+    if(e.kind==='proj'&&!showProjects)continue;
+    const vis=visible(e.s)&&visible(e.t);
+    let a,w,col,bend=0,grad=null;
+    if(e.kind==='proj'){a=.45;w=.8;col=colorOf(e.s);}
+    else if(e.kind==='role'){a=.55;w=1.15;col=colorOf(e.s);bend=.06;}
+    else if(e.kind==='spine'){a=.5;w=1.3;col=colorOf(e.t);bend=.04;}
+    else{a=.7;w=1.5;col=PAL.link;bend=.13;grad=[colorOf(e.s),colorOf(e.t)];}
+    if(!vis)a=.06;
+    if(focus){
+      const on=inFocus(e.s.id)&&inFocus(e.t.id)&&(e.s.id===focus.id||e.t.id===focus.id);
+      if(on){a=1;w+=.7;col=e.kind==='link'?PAL.link:colorOf(e.s.kind==='role'?e.s:(e.t.kind==='role'?e.t:e.s));grad=null;}
+      else a=Math.min(a,.09);
+    }
+    if(selectedArea&&!focus){
+      const inA=x=>(x.kind==='org'||x.kind==='proj')&&nodeAreas(x).includes(selectedArea);
+      if(!(inA(e.s)&&inA(e.t))) a=Math.min(a,.07);
+    }
+    if(grad){
+      const g=ctx.createLinearGradient(e.s.x,e.s.y,e.t.x,e.t.y);
+      g.addColorStop(0,hexA(grad[0],a));g.addColorStop(1,hexA(grad[1],a));
+      ctx.strokeStyle=g;
+    } else ctx.strokeStyle=hexA(col,a);
+    ctx.lineWidth=w/zk;
+    if(bend) curve(e.s.x,e.s.y,e.t.x,e.t.y,bend);
+    else{ctx.beginPath();ctx.moveTo(e.s.x,e.s.y);ctx.lineTo(e.t.x,e.t.y);ctx.stroke();}
+  }
+
+  // nodes (projects under orgs under roles under root)
+  const order={proj:0,org:1,role:2,root:3};
+  const sorted=[...nodes].sort((a,b)=>(order[a.kind]-order[b.kind])||((a.ref.role==='hub')-(b.ref.role==='hub')));
+  for(const n of sorted){
+    if(n.kind==='proj'&&!showProjects)continue;
+    const c=colorOf(n), vis=visible(n);
+    let a=vis?1:0.12;
+    if(focus&&!inFocus(n.id)) a=Math.min(a,.15);
+    if(selectedArea&&!focus){
+      if(n.kind==='org'||n.kind==='proj'){if(!nodeAreas(n).includes(selectedArea))a=Math.min(a,.12);}
+      else a=Math.min(a,.5);
+    }
+    ctx.globalAlpha=a;
+    const hot=n===hovered||n===selected;
+    if(n.kind==='root'){
+      ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,7);
+      ctx.fillStyle=hexA(c,.14);ctx.fill();
+      ctx.lineWidth=(hot?3:2.4)/Math.sqrt(zk);ctx.strokeStyle=c;ctx.stroke();
+      ctx.beginPath();ctx.arc(n.x,n.y,5,0,7);ctx.fillStyle=c;ctx.fill();
+      ctx.beginPath();ctx.arc(n.x,n.y,n.r+6,0,7);
+      ctx.strokeStyle=hexA(c,.3);ctx.lineWidth=1.2/zk;ctx.stroke();
+    }else if(n.kind==='role'){
+      const rr=Math.max(n.r,30/zk);
+      ctx.beginPath();ctx.arc(n.x,n.y,rr,0,7);
+      ctx.fillStyle=c;ctx.fill();
+      ctx.lineWidth=(hot?3:2.2)/Math.sqrt(zk);ctx.strokeStyle=PAL.ring;ctx.stroke();
+      ctx.beginPath();ctx.arc(n.x,n.y,rr+4/zk,0,7);
+      ctx.strokeStyle=hexA(c,.5);ctx.lineWidth=1.2/zk;ctx.stroke();
+    }else{
+      ctx.beginPath();ctx.arc(n.x,n.y,n.r+(hot?1.5:0),0,7);
+      ctx.fillStyle=c;ctx.fill();
+      ctx.lineWidth=2/Math.sqrt(zk);ctx.strokeStyle=PAL.ring;ctx.stroke();
+      if(n.ref.role==='hub'||n.deg>=4){
+        ctx.beginPath();ctx.arc(n.x,n.y,n.r+5,0,7);
+        ctx.strokeStyle=hexA(c,.35);ctx.lineWidth=1.4/zk;ctx.stroke();
+      }
+    }
+    if(n===selected){
+      const er=n.kind==='role'?Math.max(n.r,30/zk):n.r;
+      ctx.beginPath();ctx.arc(n.x,n.y,er+(n.kind==='org'||n.kind==='proj'?5:8/zk),0,7);
+      ctx.strokeStyle=hexA(c,.9);ctx.lineWidth=1.6/zk;ctx.stroke();
+    }
+  }
+  ctx.globalAlpha=1;
+
+  // labels (screen space) — all visible, sized by hierarchy: root > role > org > project
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.textAlign='center';
+  for(const n of sorted){
+    const kind=n.kind;
+    if(kind==='proj'&&!showProjects)continue;
+    const vis=visible(n);
+    let a=vis?1:.12;
+    if(focus&&!inFocus(n.id))a=Math.min(a,.12);
+    if(selectedArea&&!focus){
+      if(kind==='org'||kind==='proj'){if(!nodeAreas(n).includes(selectedArea))a=Math.min(a,.1);}
+      else a=Math.min(a,.55);
+    }
+    const offset=kind==='root'?26:kind==='role'?22:kind==='org'?13:9;
+    const rEff=kind==='role'?Math.max(n.r*zk,30):n.r*zk;
+    const sx=n.x*zk+tx;
+    const sy=kind==='root'? n.y*zk+ty-rEff-16 : n.y*zk+ty+rEff+offset;
+    if(sx<-220||sx>W+220||sy<-40||sy>H+40)continue;
+    if(kind==='role'){
+      const cx=n.x*zk+tx, cy=n.y*zk+ty;
+      const sr=Math.max(n.r*zk,30), isz=Math.min(42,sr*1.0);
+      drawIconScreen(ROLES[n.role].icon,cx,cy,isz,PAL.ring,a);
+    }
+    let label=n.ref.name, font, fill, boxH=15;
+    if(kind==='root'){
+      font='800 20px '+SANS;fill=colorOf(n);ctx.letterSpacing='0.3px';boxH=23;}
+    else if(kind==='role'){label=label.toUpperCase();
+      font='750 16px '+SANS;fill=colorOf(n);ctx.letterSpacing='1.6px';boxH=20;}
+    else if(kind==='org'){
+      const hub=n.ref.role==='hub';
+      const boost=Math.min(n.ref.projects.length*.125+(n.deg||0)*.225,1.75);
+      const zb=Math.min(2,Math.max(1,zk/.55));
+      const fs=((hub?7.5:6.5)+boost)*zb;
+      font=(boost>.9?'680 ':'570 ')+fs.toFixed(1)+'px '+SANS;
+      fill=PAL.ink;ctx.letterSpacing='0px';boxH=fs+4;}
+    else{
+      const zb=Math.min(2,Math.max(1,zk/.55));
+      const pfs=4.25*zb;
+      font='400 '+pfs.toFixed(1)+'px '+SANS;fill=PAL.muted;ctx.letterSpacing='0px';boxH=pfs+4;}
+    ctx.font=font;
+    const tw=ctx.measureText(label).width;
+    ctx.globalAlpha=a;
+    ctx.fillStyle=PAL.labelBg;
+    ctx.fillRect(sx-tw/2-4,sy-boxH+4,tw+8,boxH);
+    ctx.fillStyle=fill;
+    ctx.fillText(label,sx,sy+3);
+  }
+  // ring segment labels
+  if(showRing){
+    for(let i=0;i<AREA_KEYS.length;i++){
+      const k=AREA_KEYS[i], [s,e]=arcBounds(i), mid=(s+e)/2, col=AREAS[k].color;
+      const lx=Math.cos(mid)*(RING_R+64)*zk+tx, ly=Math.sin(mid)*(RING_R+64)*zk+ty;
+      if(lx<-260||lx>W+260||ly<-60||ly>H+60)continue;
+      const active=selectedArea===k||hoveredArea===k;
+      ctx.font=(active?'800 13px ':'750 12.5px ')+SANS;ctx.letterSpacing='1.1px';
+      ctx.globalAlpha=selectedArea&&!active?.35:1;
+      const parts=AREAS[k].label.toUpperCase().split(' & ');
+      parts.forEach((ln,li)=>{
+        const txt=(li===0&&parts.length>1)?ln+' &':ln;
+        const yy=ly+(li-(parts.length-1)/2)*16;
+        const tw=ctx.measureText(txt).width;
+        ctx.fillStyle=PAL.labelBg;ctx.fillRect(lx-tw/2-4,yy-10,tw+8,15);
+        ctx.fillStyle=col;ctx.fillText(txt,lx,yy+2);
+      });
+    }
+    ctx.globalAlpha=1;
+  }
+  ctx.letterSpacing='0px';
+  ctx.globalAlpha=1;
+}
+
+function loop(){ step(); draw(); requestAnimationFrame(loop); }
+buildGraph();
+for(let i=0;i<600;i++)step();
+requestAnimationFrame(loop);
+setTimeout(()=>{const h=document.getElementById('hint');if(h)h.style.opacity=0;},7000);
+
+/* ============================== interaction ============================== */
+const toScreen=n=>({x:n.x*zk+tx,y:n.y*zk+ty});
+function hitTest(px,py){
+  const wx=(px-tx)/zk, wy=(py-ty)/zk;
+  let best=null,bd=1e9;
+  for(const n of nodes){
+    if(n.kind==='proj'&&!showProjects)continue;
+    const er=n.kind==='role'?Math.max(n.r,30/zk):n.r;
+    const d=Math.hypot(n.x-wx,n.y-wy), lim=er+7/zk;
+    if(d<lim&&d<bd){best=n;bd=d;}
+  }
+  return best;
+}
+const pointers=new Map();
+let panStart=null, dragMoved=0, pinch0=null;
+cv.addEventListener('pointerdown',e=>{
+  try{cv.setPointerCapture(e.pointerId);}catch(err){}
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size===2){
+    const[p1,p2]=[...pointers.values()];
+    pinch0={d:Math.hypot(p1.x-p2.x,p1.y-p2.y),k:zk,mx:(p1.x+p2.x)/2,my:(p1.y+p2.y)/2,tx,ty};
+    dragNode=null;panStart=null;return;
+  }
+  dragMoved=0;
+  const n=hitTest(e.clientX,e.clientY);
+  if(n){dragNode=n;}
+  else{panStart={x:e.clientX,y:e.clientY,tx,ty};cv.classList.add('grabbing');}
+});
+cv.addEventListener('pointermove',e=>{
+  if(pointers.has(e.pointerId)){
+    const p=pointers.get(e.pointerId);
+    dragMoved+=Math.hypot(e.clientX-p.x,e.clientY-p.y);
+    p.x=e.clientX;p.y=e.clientY;
+  }
+  if(pointers.size===2&&pinch0){
+    const[p1,p2]=[...pointers.values()];
+    const d=Math.hypot(p1.x-p2.x,p1.y-p2.y);
+    userMoved=true;
+    const nk=Math.min(3,Math.max(.3,pinch0.k*d/pinch0.d));
+    const mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;
+    tx=mx-(pinch0.mx-pinch0.tx)*nk/pinch0.k;
+    ty=my-(pinch0.my-pinch0.ty)*nk/pinch0.k;
+    zk=nk;return;
+  }
+  if(dragNode){
+    userMoved=true;dragNode.x=(e.clientX-tx)/zk;dragNode.y=(e.clientY-ty)/zk;return;
+  }
+  if(panStart){
+    if(dragMoved>4)userMoved=true;
+    tx=panStart.tx+(e.clientX-panStart.x);
+    ty=panStart.ty+(e.clientY-panStart.y);return;
+  }
+  const n=hitTest(e.clientX,e.clientY);
+  hovered=n;
+  hoveredArea=n?null:arcHit(e.clientX,e.clientY);
+  cv.classList.toggle('pointing',!!n||!!hoveredArea);
+});
+function endPointer(e){
+  pointers.delete(e.pointerId);
+  if(pointers.size<2)pinch0=null;
+  cv.classList.remove('grabbing');
+  if(dragNode&&dragMoved<5){select(dragNode);}
+  else if(!dragNode&&panStart&&dragMoved<5){
+    const ah=arcHit(e.clientX,e.clientY);
+    if(ah)selectArea(ah); else select(null);
+  }
+  dragNode=null;panStart=null;
+}
+cv.addEventListener('pointerup',endPointer);
+cv.addEventListener('pointercancel',endPointer);
+cv.addEventListener('wheel',e=>{
+  e.preventDefault();userMoved=true;
+  const nk=Math.min(3,Math.max(.3,zk*Math.exp(-e.deltaY*.0013)));
+  tx=e.clientX-(e.clientX-tx)*nk/zk;
+  ty=e.clientY-(e.clientY-ty)*nk/zk;
+  zk=nk;
+},{passive:false});
+
+/* ============================== UI: stats & legend ============================== */
+function updateStats(){
+  const P=data.orgs.reduce((s,o)=>s+o.projects.length,0);
+  document.getElementById('stats').textContent=
+    `${data.orgs.length} organizations · ${P} projects · ${data.links.length} connections`;
+}
+function renderLegend(){
+  const el=document.getElementById('legend');
+  const counts={};data.orgs.forEach(o=>orgRoles(o).forEach(rk=>counts[rk]=(counts[rk]||0)+1));
+  el.innerHTML='<span class="eyebrow">Roles</span>'+
+    Object.entries(ROLES).filter(([k])=>counts[k]).map(([k,r])=>`
+      <button class="lrow ${roleOn[k]?'':'off'}" data-role="${k}">
+        <svg class="licon" viewBox="0 0 24 24" fill="none" stroke="${r.c[THEME]}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${r.icon}"/></svg>
+        <span>${r.label}</span>
+        <span class="n">${counts[k]||0}</span>
+      </button>`).join('')+
+    '<div id="legendHint">Click a role to filter</div>';
+  el.querySelectorAll('.lrow').forEach(b=>b.addEventListener('click',()=>{
+    const r=b.dataset.role;roleOn[r]=!roleOn[r];renderLegend();
+  }));
+}
+
+/* ============================== UI: panel ============================== */
+const panel=document.getElementById('panel'), pscroll=document.getElementById('panelScroll');
+document.getElementById('pclose').addEventListener('click',()=>select(null));
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function initials(name){return name.split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();}
+
+function selectArea(key){
+  if(!AREAS[key])return;
+  selectedArea=key; selected=null;
+  const A=AREAS[key];
+  const members=data.orgs.filter(o=>(o.areas||[]).includes(key));
+  const projs=[];
+  data.orgs.forEach(o=>o.projects.forEach(p=>{if(p.areas&&p.areas.includes(key))projs.push({p,o});}));
+  let h=`<span class="chip" style="background:${A.color}">Flourishing area</span>
+    <h2>${esc(A.label)}</h2>
+    <p class="pdesc">${esc(A.desc)}</p>
+    <div class="sect"><span class="eyebrow">Organizations · ${members.length}</span><div class="rowlist">`+
+    members.map(o=>`<button class="rowitem" data-go="${esc(o.id)}">
+      <span class="rdot" style="background:${roleColor(primaryRole(o))}"></span>
+      <span><span class="rname">${esc(o.name)}</span><br><span class="rsub">${esc((ROLES[primaryRole(o)]||{}).label||'')}</span></span>
+    </button>`).join('')+'</div></div>';
+  if(projs.length) h+=`<div class="sect"><span class="eyebrow">Flagship projects · ${projs.length}</span><div class="rowlist">`+
+    projs.map(({p,o})=>`<button class="rowitem" data-go="${esc(p.id)}">
+      <span class="rdot" style="background:${roleColor(primaryRole(o))}"></span>
+      <span><span class="rname">${esc(p.name)}</span><br><span class="rsub">${esc(o.name)}</span></span>
+    </button>`).join('')+'</div></div>';
+  pscroll.innerHTML=h;
+  pscroll.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>{
+    const t=nodeById[el.dataset.go]; if(t)select(t);
+  }));
+  panel.classList.add('open');
+}
+function select(n){
+  selected=n; selectedArea=null;
+  if(!n){panel.classList.remove('open');return;}
+  renderPanel(n);panel.classList.add('open');
+  const s=toScreen(n);
+  const pad=innerWidth>760?410:0;
+  if(s.x>W-pad-60||s.x<60||s.y<80||s.y>H-80){
+    tx+=(W-pad)/2-s.x; ty+=H/2-s.y;
+  }
+}
+function chips(list,cls){return (list&&list.length)?`<div class="tags">${list.map(t=>`<span class="tag ${cls||''}">${esc(t)}</span>`).join('')}</div>`:'<span style="color:var(--faint);font-size:11px">—</span>';}
+
+function renderPanel(n){
+  const isOrg=n.kind==='org', isRole=n.kind==='role';
+  const color=colorOf(n);
+  let h='';
+  if(n.kind==='root'){
+    const P=data.orgs.reduce((s,o)=>s+o.projects.length,0);
+    const counts={};data.orgs.forEach(o=>orgRoles(o).forEach(rk=>counts[rk]=(counts[rk]||0)+1));
+    h+=`<span class="chip" style="background:${color}">Ecosystem</span>
+      <h2>${esc(n.ref.name)}</h2>
+      <p class="pdesc">${esc(n.ref.desc)}</p>
+      <div class="sect"><span class="eyebrow">At a glance</span>
+        <p class="pdesc" style="margin-top:4px">${data.orgs.length} organizations · ${P} projects · ${data.links.length} cross-connections, anchored by the MIT Media Lab’s AHA program.</p></div>
+      <div class="sect"><span class="eyebrow">Roles</span><div class="rowlist">`+
+      Object.entries(ROLES).filter(([k])=>counts[k]&&k!=='hub').map(([k,r])=>`
+        <button class="rowitem" data-go="role:${k}">
+          <span class="rdot" style="background:${roleColor(k)}"></span>
+          <span><span class="rname">${esc(r.label)}</span><br><span class="rsub">${counts[k]} organizations</span></span>
+        </button>`).join('')+'</div></div>';
+    pscroll.innerHTML=h;
+    pscroll.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>{
+      const t=nodeById[el.dataset.go]; if(t)select(t);
+    }));
+    return;
+  }
+  if(isRole){
+    const members=data.orgs.filter(o=>orgRoles(o).includes(n.role));
+    h+=`<span class="chip" style="background:${color}">Ecosystem role</span>
+      <h2>${esc(n.ref.name)}</h2>
+      <p class="pdesc">${esc(n.ref.desc)}</p>
+      <div class="sect"><span class="eyebrow">Organizations · ${members.length}</span><div class="rowlist">`+
+      members.map(o=>`<button class="rowitem" data-go="${esc(o.id)}">
+        <span class="rdot" style="background:${roleColor(primaryRole(o))}"></span>
+        <span><span class="rname">${esc(o.name)}</span><br><span class="rsub">${orgRoles(o).length>1?esc(orgRoles(o).map(rk=>(ROLES[rk]||{}).label).join(' · ')):esc(o.location||'')}</span></span>
+      </button>`).join('')+'</div></div>';
+    pscroll.innerHTML=h;
+    pscroll.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>{
+      const t=nodeById[el.dataset.go]; if(t)select(t);
+    }));
+    return;
+  }
+  const org=isOrg?n.ref:n.org;
+  const role=ROLES[primaryRole(org)]||ROLES.community;
+  const r=n.ref;
+  if(!isOrg) h+=`<button class="crumb" data-go="${esc(org.id)}">← ${esc(org.name)}</button>`;
+  if(isOrg) h+=`<div class="chiprow">${orgRoles(org).map(rk=>`<span class="chip" style="background:${roleColor(rk)}">${esc((ROLES[rk]||{}).label||rk)}</span>`).join('')}</div>`;
+  else h+=`<span class="chip" style="background:${color}">Project · ${esc(role.label)}</span>`;
+  h+=`<h2>${esc(r.name)}</h2>`;
+  if(isOrg&&r.location) h+=`<div class="ploc"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${esc(r.location)}</div>`;
+  h+=`<p class="pdesc">${esc(r.desc||'')}</p>`;
+  if(r.people&&r.people.length) h+=`<div class="sect"><span class="eyebrow">People</span>
+    <div class="people">${r.people.map(p=>`<span class="person"><span class="avatar" style="background:${color}">${initials(p)}</span>${esc(p)}</span>`).join('')}</div></div>`;
+  h+=`<div class="sect"><span class="eyebrow">Tags</span>${chips(r.tags)}</div>`;
+  if(isOrg) h+=`<div class="sect"><span class="eyebrow">Keywords</span>${chips(r.keywords,'kw')}</div>`;
+  const myAreas=isOrg?(r.areas||[]):((r.areas&&r.areas.length)?r.areas:(org.areas||[]));
+  if(myAreas.length) h+=`<div class="sect"><span class="eyebrow">Flourishing areas</span><div class="tags">${
+    myAreas.map(k=>AREAS[k]?`<button class="tag areatag" data-areago="${k}" style="color:${AREAS[k].color};background:${AREAS[k].color}1A">${esc(AREAS[k].label)}</button>`:'').join('')}</div></div>`;
+  if(!isOrg){
+    const partners=[org,...(r.collab||[]).map(id=>data.orgs.find(o=>o.id===id)).filter(Boolean)];
+    if(partners.length>1) h+=`<div class="sect"><span class="eyebrow">Organizations · ${partners.length}</span><div class="rowlist">${
+      partners.map(o=>`<button class="rowitem" data-go="${esc(o.id)}">
+        <span class="rdot" style="background:${roleColor(primaryRole(o))}"></span>
+        <span><span class="rname">${esc(o.name)}</span><br><span class="rsub">${o.id===org.id?'Lead organization':'Collaborator'}</span></span>
+      </button>`).join('')}</div></div>`;
+  }
+  const linkUrl=r.url||(!isOrg?org.url:'');
+  if(linkUrl) h+=`<div class="sect"><span class="eyebrow">Link${r.url?'':' · via organization'}</span><a class="plink" href="${esc(linkUrl)}" target="_blank" rel="noopener">${esc(linkUrl.replace(/^https?:\/\//,''))}</a></div>`;
+
+  if(isOrg){
+    const shared=[];
+    data.orgs.forEach(o2=>{if(o2.id!==r.id)o2.projects.forEach(p=>{if((p.collab||[]).includes(r.id))shared.push({p,o:o2});});});
+    if(r.projects.length||shared.length||editMode){
+      h+=`<div class="sect"><span class="eyebrow">Projects · ${r.projects.length+shared.length}</span><div class="rowlist">`+
+        r.projects.map(p=>`<button class="rowitem" data-go="${esc(p.id)}">
+          <span class="rdot" style="background:${color}"></span>
+          <span><span class="rname">${esc(p.name)}</span>${(p.collab&&p.collab.length)?`<br><span class="rsub">with ${esc(p.collab.map(id=>(data.orgs.find(o=>o.id===id)||{}).name).filter(Boolean).join(', '))}</span>`:''}</span>
+          ${editMode?`<span class="rx" data-delproj="${esc(p.id)}" title="Delete project">✕</span>`:''}
+        </button>`).join('')+
+        shared.map(({p,o})=>`<button class="rowitem" data-go="${esc(p.id)}">
+          <span class="rdot" style="background:${roleColor(primaryRole(o))}"></span>
+          <span><span class="rname">${esc(p.name)}</span><br><span class="rsub">shared · led by ${esc(o.name)}</span></span>
+        </button>`).join('')+'</div></div>';
+    }
+    const conns=data.links.map((l,i)=>({l,i})).filter(({l})=>l.a===r.id||l.b===r.id);
+    if(conns.length||editMode){
+      h+=`<div class="sect"><span class="eyebrow">Connections · ${conns.length}</span><div class="rowlist">`+
+        conns.map(({l,i})=>{
+          const otherId=l.a===r.id?l.b:l.a;
+          const other=data.orgs.find(o=>o.id===otherId);
+          if(!other)return'';
+          return `<button class="rowitem" data-go="${esc(other.id)}">
+            <span class="rdot" style="background:${roleColor(primaryRole(other))}"></span>
+            <span><span class="rname">${esc(other.name)}</span><br><span class="rsub">${esc(l.label||'connection')}</span></span>
+            ${editMode?`<span class="rx" data-dellink="${i}" title="Remove connection">✕</span>`:''}
+          </button>`;}).join('')+'</div></div>';
+    }
+  }
+  if(editMode){
+    h+=`<div class="pactions">`;
+    h+=`<button class="btn" data-edit="1">✎ Edit</button>`;
+    if(isOrg){
+      h+=`<button class="btn" data-addproj="1">＋ Project</button>
+          <button class="btn" data-addlink="1">＋ Connection</button>`;
+      if(primaryRole(r)!=='hub') h+=`<button class="btn danger" data-del="1">Delete</button>`;
+    } else h+=`<button class="btn danger" data-del="1">Delete</button>`;
+    h+=`</div>`;
+  }
+  pscroll.innerHTML=h;
+
+  pscroll.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',ev=>{
+    if(ev.target.closest('.rx'))return;
+    const t=nodeById[el.dataset.go]; if(t)select(t);
+  }));
+  pscroll.querySelectorAll('[data-areago]').forEach(el=>el.addEventListener('click',()=>selectArea(el.dataset.areago)));
+  pscroll.querySelectorAll('[data-delproj]').forEach(el=>el.addEventListener('click',ev=>{
+    ev.stopPropagation();
+    confirmModal(`Delete project?`,()=>{
+      r.projects=r.projects.filter(p=>p.id!==el.dataset.delproj);
+      afterMutate();select(nodeById[r.id]);toast('Project deleted');
+    });
+  }));
+  pscroll.querySelectorAll('[data-dellink]').forEach(el=>el.addEventListener('click',ev=>{
+    ev.stopPropagation();
+    data.links.splice(+el.dataset.dellink,1);
+    afterMutate();select(nodeById[r.id]);toast('Connection removed');
+  }));
+  const eb=pscroll.querySelector('[data-edit]');
+  if(eb)eb.addEventListener('click',()=>isOrg?orgForm(r):projForm(org,r));
+  const ap=pscroll.querySelector('[data-addproj]');
+  if(ap)ap.addEventListener('click',()=>projForm(r,null));
+  const al=pscroll.querySelector('[data-addlink]');
+  if(al)al.addEventListener('click',()=>linkForm(r));
+  const del=pscroll.querySelector('[data-del]');
+  if(del)del.addEventListener('click',()=>{
+    confirmModal(`Delete “${r.name}” and all its ${isOrg?'projects and connections':'data'}?`,()=>{
+      if(isOrg){
+        data.orgs=data.orgs.filter(o=>o.id!==r.id);
+        data.links=data.links.filter(l=>l.a!==r.id&&l.b!==r.id);
+      } else org.projects=org.projects.filter(p=>p.id!==r.id);
+      afterMutate();select(isOrg?null:nodeById[org.id]);toast('Deleted');
+    });
+  });
+}
+function afterMutate(){persist();buildGraph();if(overlayView)refreshOverlay();}
+
+/* ============================== UI: modal ============================== */
+const scrim=document.getElementById('scrim'), modal=document.getElementById('modal');
+function openModal(html){scrim.classList.add('open');modal.innerHTML=html;
+  const f=modal.querySelector('input,textarea,select');if(f)setTimeout(()=>f.focus(),60);}
+function closeModal(){scrim.classList.remove('open');}
+scrim.addEventListener('click',e=>{if(e.target===scrim)closeModal();});
+
+function confirmModal(msg,onYes){
+  openModal(`<span class="eyebrow">Confirm</span><h3>${esc(msg)}</h3>
+    <div class="mrow"><button class="btn" id="mNo">Cancel</button>
+    <button class="btn danger" id="mYes">Delete</button></div>`);
+  modal.querySelector('#mNo').onclick=closeModal;
+  modal.querySelector('#mYes').onclick=()=>{closeModal();onYes();};
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;
+  t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2400);}
+
+/* ---- password gate ---- */
+document.getElementById('editBtn').addEventListener('click',()=>{
+  if(editMode){setEdit(false);toast('Edit mode off');return;}
+  openModal(`<span class="eyebrow">Curator access</span>
+    <h3>Enter password to edit</h3>
+    <p class="sub">Editing lets you add, modify, and remove organizations, projects, and connections. Changes are stored in this browser.</p>
+    <div class="field"><label>Password</label><input id="pw" type="password" autocomplete="off"></div>
+    <div class="ferr" id="pwErr">Incorrect password — hint: what this whole map is about.</div>
+    <div class="mrow"><button class="btn" id="mNo">Cancel</button>
+    <button class="btn primary" id="mGo">Unlock</button></div>`);
+  const tryPw=()=>{
+    const v=modal.querySelector('#pw').value.trim().toLowerCase();
+    if(v==='flourishing'){closeModal();setEdit(true);toast('Edit mode unlocked');}
+    else{modal.querySelector('#pwErr').style.display='block';
+      modal.classList.remove('shake');void modal.offsetWidth;modal.classList.add('shake');}
+  };
+  modal.querySelector('#mNo').onclick=closeModal;
+  modal.querySelector('#mGo').onclick=tryPw;
+  modal.querySelector('#pw').addEventListener('keydown',e=>{if(e.key==='Enter')tryPw();});
+});
+function setEdit(on){
+  editMode=on;
+  document.getElementById('editLbl').textContent=on?'Editing ✓':'Edit';
+  document.getElementById('editBtn').classList.toggle('primary',on);
+  document.getElementById('editDock').classList.toggle('on',on);
+  document.getElementById('tableBtn').style.display=on?'':'none';
+  if(!on&&overlayView==='table')closeOverlay();
+  else if(overlayView)refreshOverlay();
+  if(selected)renderPanel(selected);
+}
+
+/* ---- forms ---- */
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')
+  +'-'+Date.now().toString(36).slice(-4);
+const splitCsv=s=>s.split(',').map(x=>x.trim()).filter(Boolean);
+const areaChecks=sel=>`<div class="field"><label>Flourishing areas</label><div class="checks">${
+  Object.entries(AREAS).map(([k,a])=>`<label class="check"><input type="checkbox" data-area="${k}" ${
+    (sel||[]).includes(k)?'checked':''}> ${a.label}</label>`).join('')}</div></div>`;
+const readAreas=()=>[...modal.querySelectorAll('[data-area]:checked')].map(c=>c.dataset.area);
+
+function orgForm(existing){
+  const o=existing||{};
+  openModal(`<span class="eyebrow">${existing?'Edit organization':'New organization'}</span>
+    <h3>${existing?esc(o.name):'Add an organization'}</h3>
+    <div class="field"><label>Name *</label><input id="fName" value="${esc(o.name||'')}"></div>
+    <div class="field"><label>Primary role</label><select id="fRole">${
+      Object.entries(ROLES).filter(([k])=>k!=='hub'||primaryRole(o)==='hub')
+      .map(([k,rr])=>`<option value="${k}" ${primaryRole(o)===k?'selected':''}>${rr.label}</option>`).join('')}</select></div>
+    <div class="field"><label>Additional roles (an org can play several)</label><div class="checks">${
+      Object.entries(ROLES).filter(([k])=>k!=='hub').map(([k,rr])=>`<label class="check"><input type="checkbox" data-role="${k}" ${
+        orgRoles(o).slice(1).includes(k)?'checked':''}> ${rr.label}</label>`).join('')}</div></div>
+    <div class="field"><label>Location</label><input id="fLoc" value="${esc(o.location||'')}" placeholder="City, Country"></div>
+    <div class="field"><label>Website</label><input id="fUrl" value="${esc(o.url||'')}" placeholder="https://…"></div>
+    <div class="field"><label>Description</label><textarea id="fDesc">${esc(o.desc||'')}</textarea></div>
+    <div class="field"><label>People (comma-separated)</label><input id="fPeople" value="${esc((o.people||[]).join(', '))}"></div>
+    <div class="field"><label>Tags (comma-separated)</label><input id="fTags" value="${esc((o.tags||[]).join(', '))}"></div>
+    <div class="field"><label>Keywords (comma-separated)</label><input id="fKw" value="${esc((o.keywords||[]).join(', '))}"></div>
+    ${areaChecks(o.areas)}
+    <div class="ferr" id="fErr">Name is required.</div>
+    <div class="mrow"><button class="btn" id="mNo">Cancel</button>
+    <button class="btn primary" id="mGo">${existing?'Save changes':'Add to map'}</button></div>`);
+  modal.querySelector('#mNo').onclick=closeModal;
+  modal.querySelector('#mGo').onclick=()=>{
+    const name=modal.querySelector('#fName').value.trim();
+    if(!name){modal.querySelector('#fErr').style.display='block';return;}
+    const primary=modal.querySelector('#fRole').value;
+    const extra=[...modal.querySelectorAll('[data-role]:checked')].map(c=>c.dataset.role).filter(k=>k!==primary);
+    const v={name,role:primary,roles:[primary,...extra],
+      location:modal.querySelector('#fLoc').value.trim(),
+      url:modal.querySelector('#fUrl').value.trim(),
+      desc:modal.querySelector('#fDesc').value.trim(),
+      people:splitCsv(modal.querySelector('#fPeople').value),
+      tags:splitCsv(modal.querySelector('#fTags').value),
+      keywords:splitCsv(modal.querySelector('#fKw').value),
+      areas:readAreas()};
+    if(existing)Object.assign(existing,v);
+    else data.orgs.push({id:slug(name),projects:[],...v});
+    closeModal();afterMutate();
+    const node=nodeById[existing?existing.id:data.orgs[data.orgs.length-1].id];
+    if(node)select(node);
+    toast(existing?'Saved':'Organization added');
+  };
+}
+function projForm(org,existing){
+  const p=existing||{};
+  openModal(`<span class="eyebrow">${existing?'Edit project':'New project'} · ${esc(org.name)}</span>
+    <h3>${existing?esc(p.name):'Add a project'}</h3>
+    <div class="field"><label>Name *</label><input id="fName" value="${esc(p.name||'')}"></div>
+    <div class="field"><label>Description</label><textarea id="fDesc">${esc(p.desc||'')}</textarea></div>
+    <div class="field"><label>People (comma-separated)</label><input id="fPeople" value="${esc((p.people||[]).join(', '))}"></div>
+    <div class="field"><label>Tags (comma-separated)</label><input id="fTags" value="${esc((p.tags||[]).join(', '))}"></div>
+    <div class="field"><label>Link</label><input id="fUrl" value="${esc(p.url||'')}" placeholder="https://…"></div>
+    ${areaChecks(p.areas)}
+    <div class="field"><label>Collaborating organizations (⌘/Ctrl-click for multiple)</label>
+      <select id="fCollab" multiple size="5">${
+        data.orgs.filter(o=>o.id!==org.id).map(o=>`<option value="${esc(o.id)}" ${
+          (p.collab||[]).includes(o.id)?'selected':''}>${esc(o.name)}</option>`).join('')}</select></div>
+    <div class="ferr" id="fErr">Name is required.</div>
+    <div class="mrow"><button class="btn" id="mNo">Cancel</button>
+    <button class="btn primary" id="mGo">${existing?'Save changes':'Add project'}</button></div>`);
+  modal.querySelector('#mNo').onclick=closeModal;
+  modal.querySelector('#mGo').onclick=()=>{
+    const name=modal.querySelector('#fName').value.trim();
+    if(!name){modal.querySelector('#fErr').style.display='block';return;}
+    const v={name,desc:modal.querySelector('#fDesc').value.trim(),
+      people:splitCsv(modal.querySelector('#fPeople').value),
+      tags:splitCsv(modal.querySelector('#fTags').value),
+      url:modal.querySelector('#fUrl').value.trim(),
+      areas:readAreas(),
+      collab:[...modal.querySelector('#fCollab').selectedOptions].map(op=>op.value)};
+    if(existing)Object.assign(existing,v);
+    else org.projects.push({id:slug(name),...v});
+    closeModal();afterMutate();select(nodeById[org.id]);
+    toast(existing?'Saved':'Project added');
+  };
+}
+function linkForm(org){
+  const others=data.orgs.filter(o=>o.id!==org.id);
+  openModal(`<span class="eyebrow">New connection · ${esc(org.name)}</span>
+    <h3>Connect to another organization</h3>
+    <div class="field"><label>Organization</label><select id="fTo">${
+      others.map(o=>`<option value="${esc(o.id)}">${esc(o.name)}</option>`).join('')}</select></div>
+    <div class="field"><label>Relationship label</label><input id="fLbl" placeholder="e.g. Joint research, Funding"></div>
+    <div class="mrow"><button class="btn" id="mNo">Cancel</button>
+    <button class="btn primary" id="mGo">Connect</button></div>`);
+  modal.querySelector('#mNo').onclick=closeModal;
+  modal.querySelector('#mGo').onclick=()=>{
+    data.links.push({a:org.id,b:modal.querySelector('#fTo').value,
+      label:modal.querySelector('#fLbl').value.trim()||'connection'});
+    closeModal();afterMutate();select(nodeById[org.id]);toast('Connection added');
+  };
+}
+
+/* ---- dock ---- */
+document.getElementById('addOrgBtn').addEventListener('click',()=>orgForm(null));
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  confirmModal('Reset the map to the original seed dataset? Your edits in this browser will be lost.',()=>{
+    data=JSON.parse(JSON.stringify(SEED));persist();buildGraph();select(null);toast('Reset to seed data');
+  });
+});
+
+/* ---- export ---- */
+document.getElementById('exportBtn').addEventListener('click',async()=>{
+  const json=JSON.stringify(data,null,2);
+  const fname='ai-human-flourishing-atlas.json';
+  try{
+    if(window.claude?.downloads?.save){
+      await window.claude.downloads.save({filename:fname,data:json});
+      toast('Dataset exported');return;
+    }
+  }catch(e){}
+  try{
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([json],{type:'application/json'}));
+    a.download=fname;a.click();URL.revokeObjectURL(a.href);toast('Dataset exported');
+  }catch(e){toast('Export unavailable');}
+});
+
+/* ---- flourishing ring toggle ---- */
+const ringBtn=document.getElementById('ringBtn');
+ringBtn.addEventListener('click',()=>{
+  showRing=!showRing;
+  ringBtn.textContent=showRing?'Hide ring':'Show ring';
+  if(showRing){fitRing();}
+  else{hoveredArea=null;if(selectedArea){selectedArea=null;panel.classList.remove('open');}}
+  toast(showRing?'Flourishing ring shown':'Flourishing ring hidden');
+});
+
+/* ---- projects toggle ---- */
+const projBtn=document.getElementById('projBtn');
+projBtn.addEventListener('click',()=>{
+  showProjects=!showProjects;
+  projBtn.textContent=showProjects?'Hide projects':'Show projects';
+  projBtn.classList.toggle('primary',!showProjects);
+  toast(showProjects?'Projects shown':'Projects hidden');
+});
+
+/* ============================== overlay views ============================== */
+let overlayView=null;
+let tblQuery='', tblRole='', tblArea='', tblSort='projects', tblDir=-1;
+const overlayEl=document.getElementById('overlay');
+function projCount(o){
+  let n=o.projects.length;
+  data.orgs.forEach(o2=>{if(o2.id!==o.id)o2.projects.forEach(p=>{if((p.collab||[]).includes(o.id))n++;});});
+  return n;
+}
+function orgAdjacency(){
+  const adj={};data.orgs.forEach(o=>adj[o.id]=new Set());
+  data.links.forEach(l=>{if(adj[l.a]&&adj[l.b]){adj[l.a].add(l.b);adj[l.b].add(l.a);}});
+  data.orgs.forEach(o=>o.projects.forEach(p=>(p.collab||[]).forEach(c=>{
+    if(adj[o.id]&&adj[c]){adj[o.id].add(c);adj[c].add(o.id);}
+  })));
+  return adj;
+}
+function openNodeFromOverlay(id){closeOverlay();const t=nodeById[id];if(t)select(t);}
+function openOverlay(view){
+  overlayView=view;overlayEl.classList.add('open');
+  if(view==='table')renderTable();else renderPathway();
+}
+function closeOverlay(){overlayEl.classList.remove('open');overlayView=null;}
+function refreshOverlay(){if(overlayView==='table')renderTable();else if(overlayView==='pathway')renderPathway();}
+document.getElementById('ovClose').addEventListener('click',closeOverlay);
+document.getElementById('tableBtn').addEventListener('click',()=>openOverlay('table'));
+document.getElementById('pathwayBtn').addEventListener('click',()=>openOverlay('pathway'));
+
+/* ---- table editor ---- */
+function renderTable(){
+  document.getElementById('ovEyebrow').textContent='Editable directory';
+  document.getElementById('ovTitle').textContent='Organizations — Table Editor';
+  document.getElementById('overlayTools').innerHTML = editMode
+    ?'<button class="btn primary" id="tAdd">＋ Add organization</button>'
+    :'<button class="btn" id="tUnlock">🔓 Unlock editing</button>';
+  const linkDeg={};data.links.forEach(l=>{linkDeg[l.a]=(linkDeg[l.a]||0)+1;linkDeg[l.b]=(linkDeg[l.b]||0)+1;});
+  let rows=data.orgs.filter(o=>{
+    if(tblRole&&!orgRoles(o).includes(tblRole))return false;
+    if(tblArea&&!(o.areas||[]).includes(tblArea))return false;
+    if(tblQuery){const q=tblQuery.toLowerCase();
+      if(![o.name,o.desc,(o.people||[]).join(' '),(o.tags||[]).join(' '),o.location].join(' ').toLowerCase().includes(q))return false;}
+    return true;
+  });
+  const val=o=>({name:o.name.toLowerCase(),role:(ROLES[primaryRole(o)]||{}).label||'',
+    location:(o.location||'').toLowerCase(),projects:projCount(o),connections:linkDeg[o.id]||0}[tblSort]);
+  rows.sort((a,b)=>{const x=val(a),y=val(b);return (x<y?-1:x>y?1:0)*tblDir;});
+  const th=(k,lbl,cls)=>`<th data-sort="${k}" class="${cls||''}">${lbl}${tblSort===k?(tblDir>0?' ▲':' ▼'):''}</th>`;
+  const areaOpts=['<option value="">All areas</option>'].concat(Object.entries(AREAS).map(([k,a])=>`<option value="${k}" ${tblArea===k?'selected':''}>${a.label}</option>`)).join('');
+  const roleOpts=['<option value="">All roles</option>'].concat(Object.entries(ROLES).map(([k,r])=>`<option value="${k}" ${tblRole===k?'selected':''}>${r.label}</option>`)).join('');
+  let html=`<div class="tbar">
+    <input id="tSearch" type="search" placeholder="Search organizations…" value="${esc(tblQuery)}" style="min-width:200px">
+    <select id="tRole">${roleOpts}</select>
+    <select id="tArea">${areaOpts}</select>
+    ${(tblQuery||tblRole||tblArea)?'<button class="btn" id="tClear">Clear filters</button>':''}
+    <span class="tcount">${rows.length} of ${data.orgs.length} organizations</span>
+  </div>
+  <div style="overflow-x:auto"><table class="otable"><thead><tr>
+    ${th('name','Organization')}${th('role','Roles')}${th('location','Location')}
+    <th>Flourishing areas</th>${th('projects','Projects','tnum')}${th('connections','Connections','tnum')}
+    ${editMode?'<th></th>':''}
+  </tr></thead><tbody>`;
+  rows.forEach(o=>{
+    html+=`<tr>
+      <td><span class="oname" data-open="${esc(o.id)}">${esc(o.name)}</span></td>
+      <td><div class="rolepills">${orgRoles(o).map(rk=>`<span class="rolepill" style="background:${roleColor(rk)}">${esc((ROLES[rk]||{}).label||rk)}</span>`).join('')}</div></td>
+      <td style="color:var(--muted);font-size:11.5px">${esc(o.location||'—')}</td>
+      <td><div class="rolepills">${(o.areas||[]).map(k=>AREAS[k]?`<span class="areapill" style="color:${AREAS[k].color};background:${AREAS[k].color}1A">${esc(AREAS[k].label)}</span>`:'').join('')||'<span style="color:var(--faint)">—</span>'}</div></td>
+      <td class="tnum">${projCount(o)}</td>
+      <td class="tnum">${linkDeg[o.id]||0}</td>
+      ${editMode?`<td style="white-space:nowrap"><button class="ticon" data-edit="${esc(o.id)}" title="Edit">✎</button><button class="ticon del" data-del="${esc(o.id)}" title="Delete">✕</button></td>`:''}
+    </tr>`;
+  });
+  html+='</tbody></table></div>';
+  const body=document.getElementById('overlayBody');body.innerHTML=html;
+  body.querySelectorAll('[data-open]').forEach(el=>el.addEventListener('click',()=>openNodeFromOverlay(el.dataset.open)));
+  body.querySelectorAll('th[data-sort]').forEach(el=>el.addEventListener('click',()=>{
+    const k=el.dataset.sort;if(tblSort===k)tblDir*=-1;else{tblSort=k;tblDir=(k==='projects'||k==='connections')?-1:1;}renderTable();
+  }));
+  const si=body.querySelector('#tSearch');si.addEventListener('input',()=>{tblQuery=si.value;const p=si.selectionStart;renderTable();const n=document.querySelector('#tSearch');if(n){n.focus();n.setSelectionRange(p,p);}});
+  body.querySelector('#tRole').addEventListener('change',e=>{tblRole=e.target.value;renderTable();});
+  body.querySelector('#tArea').addEventListener('change',e=>{tblArea=e.target.value;renderTable();});
+  const tc=body.querySelector('#tClear');if(tc)tc.addEventListener('click',()=>{tblQuery=tblRole=tblArea='';renderTable();});
+  body.querySelectorAll('[data-edit]').forEach(el=>el.addEventListener('click',()=>orgForm(data.orgs.find(o=>o.id===el.dataset.edit))));
+  body.querySelectorAll('[data-del]').forEach(el=>el.addEventListener('click',()=>{
+    const o=data.orgs.find(x=>x.id===el.dataset.del);
+    confirmModal(`Delete “${o.name}” and all its projects and connections?`,()=>{
+      data.orgs=data.orgs.filter(x=>x.id!==o.id);
+      data.links=data.links.filter(l=>l.a!==o.id&&l.b!==o.id);
+      afterMutate();toast('Deleted');
+    });
+  }));
+  const ta=document.getElementById('tAdd');if(ta)ta.addEventListener('click',()=>orgForm(null));
+  const tu=document.getElementById('tUnlock');if(tu)tu.addEventListener('click',()=>document.getElementById('editBtn').click());
+}
+
+/* ---- pathway to impact ---- */
+const PATHWAY=[
+  {roles:['funder'],       title:'Philanthropy',       sub:'Capital fuels the field'},
+  {roles:['hub','academic'],title:'Research',          sub:'Evidence & ideas'},
+  {roles:['measure'],      title:'Measurement & Data', sub:'Benchmarks & metrics'},
+  {roles:['civil'],        title:'Civil Society',      sub:'Advocacy & public interest'},
+  {roles:['industry'],     title:'Companies & Labs',   sub:'Building & deployment'},
+  {roles:['policy'],       title:'Policy & Governance',sub:'Rules & norms'},
+  {roles:['community'],    title:'Community',           sub:'Movement & culture'},
+];
+function renderPathway(){
+  document.getElementById('ovEyebrow').textContent='Systemic view';
+  document.getElementById('ovTitle').textContent='Pathway to Impact';
+  document.getElementById('overlayTools').innerHTML='';
+  const adj=orgAdjacency();
+  let html=`<p class="pathnote">How work on AI &amp; human flourishing flows from funding to lasting impact. Each column is a stage in the ecosystem; the number on each organization is how many projects it runs on AI &amp; human flourishing. Hover an organization to trace its connections across stages; click to open it in the map.</p><div style="overflow-x:auto"><div class="pathgrid">`;
+  PATHWAY.forEach((stage,si)=>{
+    const rk=stage.roles[0], col=roleColor(rk), ic=ROLES[rk].icon;
+    let orgs=data.orgs.filter(o=>stage.roles.some(r=>orgRoles(o).includes(r)));
+    orgs.sort((a,b)=>projCount(b)-projCount(a));
+    const totalProj=orgs.reduce((s,o)=>s+projCount(o),0);
+    html+=`<div class="pathcol">
+      <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${ic}"/></svg>${esc(stage.title)}</h3>
+      <div class="stagesub">${esc(stage.sub)}</div>
+      <div class="stagestat">${orgs.length} orgs · ${totalProj} projects</div>
+      <div class="pathlist">`+
+      orgs.map(o=>`<button class="pathitem" data-id="${esc(o.id)}">
+        <span class="pdot" style="background:${roleColor(primaryRole(o))}"></span>
+        <span class="pnm">${esc(o.name)}</span>
+        <span class="pj" title="Projects on AI &amp; human flourishing">${projCount(o)}</span>
+      </button>`).join('')+`</div></div>`;
+    if(si<PATHWAY.length-1) html+=`<div class="pathstep"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>`;
+  });
+  html+='</div></div>';
+  const body=document.getElementById('overlayBody');body.innerHTML=html;
+  const items=[...body.querySelectorAll('.pathitem')];
+  items.forEach(el=>{
+    el.addEventListener('click',()=>openNodeFromOverlay(el.dataset.id));
+    el.addEventListener('mouseenter',()=>{
+      const id=el.dataset.id, near=adj[id]||new Set();
+      items.forEach(it=>{
+        const iid=it.dataset.id;
+        if(iid===id)it.classList.add('hot');
+        else if(near.has(iid))it.classList.add('hot');
+        else it.classList.add('dim');
+      });
+    });
+    el.addEventListener('mouseleave',()=>items.forEach(it=>it.classList.remove('hot','dim')));
+  });
+}
+
+/* ---- search & keys ---- */
+const q=document.getElementById('q');
+q.addEventListener('input',()=>{query=q.value.trim();});
+addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(scrim.classList.contains('open'))closeModal();
+    else if(overlayView)closeOverlay();
+    else if(selected||selectedArea)select(null);
+    else if(query){q.value='';query='';}
+  }
+  if(e.key==='/'&&document.activeElement!==q&&!scrim.classList.contains('open')){
+    e.preventDefault();q.focus();
+  }
+});
+</script>
