@@ -6,9 +6,9 @@ import { step, colorOf, nodeAreas, arcBounds, arcHit, visible, edgeProminence, e
 
 /* Connections and project spokes are fully opaque. Connection width ramps along the
    sigmoid prominence of the two organizations it joins; project spokes are uniform. */
-const LINK_ALPHA = 1, LINK_W_MIN = 0.4, LINK_W_MAX = 0.9;
-const PROJ_ALPHA = 1, PROJ_WIDTH = 0.4;
-const ROLE_ALPHA = 1, ROLE_WIDTH = 0.6;
+const LINK_ALPHA = 1, LINK_W_MIN = 0.5, LINK_W_MAX = 1.0;
+const PROJ_ALPHA = 1, PROJ_WIDTH = 0.5;
+const ROLE_ALPHA = 1, ROLE_WIDTH = 0.7;
 import { select, selectArea } from './panel.js';
 
 const cv = document.getElementById('net'), ctx = cv.getContext('2d');
@@ -116,7 +116,7 @@ export function draw() {
     let a, w, col, bend = 0, grad = null;
     if (e.kind === 'proj') { a = .45; w = .8; col = colorOf(e.s); }
     else if (e.kind === 'role') { a = .55; w = 1.15; col = colorOf(e.s); bend = .06; }
-    else if (e.kind === 'spine') { a = .5; w = 1.3; col = colorOf(e.t); bend = .04; }
+    else if (e.kind === 'spine') { a = .5; w = 1.4; col = colorOf(e.t); bend = .04; }
     else { a = .7; w = 1.5; col = PAL.link; bend = .13; grad = [colorOf(e.s), colorOf(e.t)]; }
     // connections and project spokes all read the same; only the role spokes
     // recede with how sparsely connected their ends are

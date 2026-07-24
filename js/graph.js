@@ -181,7 +181,8 @@ export function visible(n) {
    larger than their drawn radius, so organizations keep clear of them and their
    labels stay readable instead of being buried under the cluster they name. */
 const REPEL = 260;
-const repelR = n => n.kind === 'role' ? n.r * 5 : n.kind === 'root' ? n.r * 4 : n.r;
+/* The root clears a wide berth so its title has room to breathe in the middle. */
+const repelR = n => n.kind === 'role' ? n.r * 5 : n.kind === 'root' ? n.r * 24 : n.r;
 
 /* Base repulsion scales with the sum of two radii, so a big node barely pushes a big
    neighbour harder than it pushes a small one. This extra term is the product of the
@@ -213,7 +214,8 @@ export function step() {
     e.s.vx += fx; e.s.vy += fy; e.t.vx -= fx; e.t.vy -= fy;
   }
   for (const n of nodes) {
-    if (n.kind === 'root') { n.vx += (n.ax - n.x) * 0.09; n.vy += (n.ay - n.y) * 0.09; }
+    // the root is pinned dead centre — it still pushes its neighbours away, but never moves
+    if (n.kind === 'root') { n.x = n.ax; n.y = n.ay; n.vx = 0; n.vy = 0; continue; }
     // role anchors hold their ring position firmly — their clusters arrange around
     // them, not the other way round, so the labelled landmarks stay evenly spaced
     else if (n.kind === 'role') { n.vx += (n.ax - n.x) * 0.14; n.vy += (n.ay - n.y) * 0.14; }

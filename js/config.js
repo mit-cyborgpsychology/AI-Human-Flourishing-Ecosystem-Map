@@ -65,7 +65,7 @@ export const LINK_TYPES = {
 };
 
 export const SANS = '-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif';
-export const RING_R = 850, RING_W = 26;
+export const RING_R = 960, RING_W = 26;
 
 export const PATHWAY = [
   {roles:['funder'],        title:'Philanthropy',       sub:'Capital fuels the field'},
